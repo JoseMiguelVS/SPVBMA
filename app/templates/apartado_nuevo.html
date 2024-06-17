@@ -1,0 +1,57 @@
+
+{% extends './layout.html' %}
+
+{% block title %} {{titulo}} {% endblock %}
+
+{% block body %}
+
+
+
+<form method="POST" action="{{url_for('apartados_crear')}}">
+    <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+   
+    <div class="form-group">
+      <label for="prenda">Prenda</label>
+      <input type="text" class="form-control" id="prenda" placeholder="en desarrollo solo acepta id_prendas" name="prenda">
+    </div>
+    
+    <div class="form-group">
+      <label for="anticipo">Anticipo</label>
+      <input type="text" class="form-control" id="anticipo" placeholder="ej.200" name="anticipo">
+    </div>
+    
+    <div class="form-group">
+        <label for="total_restante">Restante </label>
+        <input type="text" class="form-control" id="total_restante" placeholder="'ej.300'" name="total_restante">
+        </div>
+        
+     <div class="form-group">
+          <label for="precio_final">Precio final</label>
+          <input type="text" class="form-control" id="precio_final" placeholder="ej.500" name="precio_final">
+        </div>
+
+     <div class="form-group">
+          <label for="nombre_cliente">Nombre del cliente</label>
+          <input type="text" class="form-control" id="nombre_cliente" placeholder="ej.Juan" name="nombre_cliente">
+        </div>
+
+     <div class="form-group">
+          <label for="fecha_apartado">Fecha de aparatado</label>
+          <input type="text" class="form-control" id="fecha_apartado" placeholder="AAAA-MM-DD" name="fecha_apartado">
+        </div>
+
+     <div class="form-group">
+          <label for="fecha_maxima">Dia maximo de espera</label>
+          <input type="text" class="form-control" id="fecha_maxima" placeholder="AAAA-MM-DD" name="fecha_maxima">
+        </div>
+    
+    <button class="btn btn-primary d-inline-flex align-items-center" type="submit">
+        Guardar
+    </button>
+    <a class="btn btn-outline-danger d-inline-flex align-items-center" href="{{url_for('ventas')}}">
+        Cancelar
+    </a>
+</form>
+
+
+{% endblock %}

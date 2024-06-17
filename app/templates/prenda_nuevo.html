@@ -1,0 +1,62 @@
+{% extends './layout.html' %}
+
+{% block title %} {{titulo}} {% endblock %}
+
+{% block body %}
+
+
+
+<form method="POST" action="{{url_for('prendas_crear')}}">
+  <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+
+  <div class="form-group">
+    <label for="tipo_prenda">Tipo</label>
+    <input type="text" class="form-control" id="tipo_prenda" placeholder="ej.Camiseta" name="tipo_prenda">
+  </div>
+
+  <div class="form-group">
+    <label for="talla_prenda">Talla</label>
+    <input type="text" class="form-control" id="talla_prenda" placeholder="ej.XXL" name="talla_prenda">
+  </div>
+
+  <div class="form-group">
+    <label for="color_prenda">Color</label>
+    <input type="text" class="form-control" id="color_prenda" placeholder="ej.Azul" name="color_prenda">
+  </div>
+
+  <div class="form-group">
+    <label for="precio_prenda">Precio</label>
+    <input type="text" class="form-control" id="precio_prenda" placeholder="ej.50" name="precio_prenda">
+  </div>
+
+  <div class="form-group">
+    <label for="marca_prenda">Marca</label>
+    <input type="text" class="form-control" id="marca_prenda" placeholder="ej.lacosteña" name="marca_prenda">
+  </div>
+
+  <div class="form-group">
+    <label for="stock">Stock</label>
+    <input type="text" class="form-control" id="stock" placeholder="ej.100" name="stock">
+  </div>
+
+  <div class="form-group">
+    <label for="codigo_prenda">Codigo</label>
+    <input type="text" class="form-control" id="codigo_prenda" placeholder="ej.A001" name="codigo_prenda">
+  </div>
+
+  <div class="form-group">
+    <label for="nombre_prov">Proveedor</label>
+    <input type="text" class="form-control" id="nombre_prov"
+      placeholder="en construccion solo funciona con id del Proveedor " name="nombre_prov">
+  </div>
+  <br>
+  <button class="btn btn-outline-danger d-inline-flex align-items-center" type="submit">
+    Guardar
+  </button>
+  <a class="btn btn-outline-danger d-inline-flex align-items-center" href="{{url_for('prendas')}}">
+    Cancelar
+  </a>
+</form>
+
+
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends './layout.html' %}
+
+{% block title %} {{titulo}} {% endblock %}
+
+{% block body %}
+
+
+
+<form method="POST" action="{{url_for('usuarios_actualizar',id=usuarios[0])}} ">
+  <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+
+  <div class="form-group">
+    <label for="nombre_usuario">Nombre(s)</label>
+    <input type="text" class="form-control" id="nombre_usuario" placeholder="Nombre" name="nombre_usuario"
+      value="{{usuarios[1]}}">
+  </div>
+
+  <div class="form-group">
+    <label for="apellido_usuario">Apellido</label>
+    <input type="text" class="form-control" id="apellido_usuario" placeholder="Apellido" name="apellido_usuario"
+      value="{{usuarios[2]}}">
+  </div>
+
+  <div class="form-group">
+    <label for="celular_usuario">Celular</label>
+    <input type="text" class="form-control" id="celular_usuario" placeholder="Numero" name="celular_usuario"
+      value="{{usuarios[3]}}">
+  </div>
+
+  <div class="form-group">
+    <label for="cargo">Cargo</label>
+    <input type="text" class="form-control" id="cargo" placeholder="Rol" name="cargo" value="{{usuarios[4]}}">
+  </div>
+
+  <div class="form-group">
+    <label for="domicilio_usuario">Domicilo</label>
+    <input type="text" class="form-control" id="domicilo_usuario" placeholder="Calle" name="domicilio_usuario"
+      value="{{usuarios[5]}}">
+  </div>
+
+  <div class="form-group">
+    <label for="contrasenia">Contraseña</label>
+    <input type="text" class="form-control" id="contrasenia" placeholder="Contraseña" name="contrasenia"
+      value="{{usuarios[6]}}">
+  </div>
+
+  <div class="form-group">
+    <label for="correo_electronico">Correo Electronico</label>
+    <input type="text" class="form-control" id="correo_electronico" placeholder="Gmail" name="correo_electronico"
+      value="{{usuarios[7]}}">
+  </div>
+  <br>
+  <button class="btn btn-outline-danger d-inline-flex align-items-center" type="submit">
+    Guardar
+  </button>
+  <a class="btn btn-outline-danger d-inline-flex align-items-center" href="{{url_for('usuarios')}}">
+    Cancelar
+  </a>
+</form>
+
+
+{% endblock %}

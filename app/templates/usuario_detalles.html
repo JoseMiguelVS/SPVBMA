@@ -1,0 +1,59 @@
+{% extends './layout.html' %}
+{% block title %} Ay hola {% endblock %}
+{% block body %}
+
+<table class="table">
+
+    <thead>
+        <tr>
+            <th class="text-center">Nombre </th>
+            <th class="text-center">Apellidos </th>
+            <th class="text-center">Celular </th>
+            <th class="text-center">Cargo </th>
+            <th class="text-center">Domicilo </th>
+            <th class="text-center">Contraseña </th>
+            <th class="text-center">Correo Electronico </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+
+            <td>
+                {{usuarios[1]}}
+            </td>
+            <td>
+                {{usuarios[2]}}
+            </td>
+            <td>
+                {{usuarios[3]}}
+            </td>
+            <td>
+                {{usuarios[4]}}
+            </td>
+            <td>
+                {{usuarios[5]}}
+            </td>
+            <td>
+                {{usuarios[6]}}
+            </td>
+            <td>
+                {{usuarios[7]}}
+            </td>
+
+        </tr>
+    </tbody>
+</table>
+
+<div class="btn btn-outline-danger d-inline-flex align-items-center">
+    <!-- usuario_actualizar.html> -->
+    <a class="btn-act" href="{{ url_for('usuarios_editar', id = usuarios[0]) }}"><img
+            src="{{ url_for('static',filename = 'img/edit.png') }}" alt="Editar" height="18">Editar</a>
+</div>
+<br>
+<br>
+<div class="btn btn-outline-danger d-inline-flex align-items-center">
+
+    <a class="btn-act" href="{{url_for('usuarios')}}"><img src="{{ url_for('static',filename = 'img/undo.svg') }}" alt="cancelar"
+            height="18">Cancelar</a>
+</div>
+{% endblock %}

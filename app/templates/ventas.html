@@ -1,0 +1,54 @@
+{% extends './layout.html' %}
+{% block title %} Ay hola {% endblock %}
+{% block body %}
+
+<h2>Ventas</h2>
+<br>
+<a href="{{url_for('venta_nuevo')}}" class="btn btn-outline-primary d-inline-flex align-items-center"><i></i> Nuevo</a>
+<br><br>
+
+
+<table class="table table-hover">
+        <thead>
+                <tr>
+                        <th class="text-center">Prenda</th>
+                        <th class="text-center">Total</th>
+                        <th class="text-center">Fecha</th>
+                        <th class="text-center">Vendedor</th>
+                        <th class="text-center">Editar</th>
+                        <th class="text-center">Borrar</th>
+                </tr>
+        </thead>
+        <tbody>
+                {% for venta in ventas %}
+                <tr>
+                        <td class="text-center">
+                                {{venta[5]}}
+                        </td>
+                        <td class="text-center">
+                                {{venta[3]}}
+                        </td>
+                        <td class="text-center">
+                                {{venta[4]}}
+                        </td>
+                        <td class="text-center">
+                                {{venta[6]}}
+                        </td>
+                        <td class="text-center">
+                                <div class="btn btn-outline-danger d-inline-flex align-items-center">
+                                        <a href="#"><img src="{{ url_for('static',filename = 'img/edit.png') }}"
+                                                        alt="Editar" height="18"></a>
+                                </div>
+                        </td>
+                        <td>
+                                <div class="btn btn-outline-danger d-inline-flex align-items-center">
+                                        <a href="#"><img src="{{ url_for('static',filename = 'img/delete.png') }}"
+                                                        alt="borrar" height="18"></a>
+                                </div>
+                        </td>
+                </tr>
+                {% endfor %}
+        </tbody>
+</table>
+
+{% endblock %}
