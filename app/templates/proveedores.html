@@ -2,23 +2,48 @@
 {% block title %} Ay hola {% endblock %}
 {% block body %}
 
-<h2>Proveedores</h2>
+<h2>Proveedor</h2>
+
+<!-- -----------------Alertas de registro, editado, borrado y restaurado---------------------------- -->
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-{% if " Error" in message %}danger {% elif "Advertencia" in message %}warning {% else %}success
+        {% endif %} alert-dismissible fade show" role="alert">
+        <strong>{{message}}</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
+
 <br>
-<a href="{{url_for('proveedor_nuevo')}}" class="btn btn-outline-primary d-inline-flex align-items-center"><i></i> Nuevo</a>
+<a href="{{url_for('proveedores_nuevo')}}" class="btn btn-outline-danger d-inline-flex align-items-center"><i></i>
+        Nuevo</a>
 <br><br>
 
-<table class="table table-hover">
+<table class="table-bordered table-responsive">
         <thead>
                 <tr>
-                        <th class="text-center">Nombre del proveedor </th>
+                        <th class="text-center">Ver</th>
+                        <th class="text-center">Nombre</th>
                         <th class="text-center">Celular </th>
                         <th class="text-center">Editar</th>
-                        <th class="text-center">Borrar</th>
+                        <th class="text-center">Eliminar </th>
                 </tr>
         </thead>
         <tbody>
                 {% for proveedor in proveedores %}
+                {% if proveedor.3==True %}
                 <tr>
+                        <td class="text-center">
+                                <div class="btn btn-outline-danger d-inline-flex align-items-center">
+
+                                        <a href="{{ url_for('proveedores_detalles', id = proveedor[0]) }}"><img
+                                                        src="{{ url_for('static',filename = 'img/eye.svg') }}" alt="ver"
+                                                        height="18"></a>
+                                </div>
+                        </td>
 
                         <td class="text-center">
                                 {{proveedor[1]}}
@@ -27,21 +52,61 @@
                                 {{proveedor[2]}}
                         </td>
 
-                        <td>
+                        <td class="text-center">
                                 <div class="btn btn-outline-danger d-inline-flex align-items-center">
-                                        <a href="#"><img src="{{ url_for('static',filename = 'img/edit.png') }}"
+                                        <a href="{{ url_for('proveedores_editar', id = proveedor[0]) }}"><img
+                                                        src="{{ url_for('static',filename = 'img/edit.png') }}"
                                                         alt="Editar" height="18"></a>
                                 </div>
-                        <td>
-                                <div class="btn btn-outline-danger d-inline-flex align-items-center">
-                                        <a href="#"><img src="{{ url_for('static',filename = 'img/delete.png') }}"
-                                                        alt="borrar" height="18"></a>
-                                </div>
                         </td>
+
+                        <td class="text-center">
+                                <button type="button" class="btn btn-outline-danger d-inline-flex align-items-center"
+                                        data-bs-toggle="modal" data-bs-target="#staticBackdrop-{{proveedor.0}}"><img
+                                                src="{{ url_for('static',filename = 'img/delete.png') }}" alt="borrar"
+                                                height="18">
+                                </button>
                         </td>
+
                 </tr>
+                {% endif %}
                 {% endfor %}
+
         </tbody>
 </table>
+<br>
+<div>
+        <a href="{{ url_for('proveedor_papelera') }}"
+                class="btn btn-outline-danger d-inline-flex aligng-items-center">Papelera<img
+                        src="{{ url_for('static',filename = 'img/trash.svg') }}" alt="papelera" height="18"></a>
 
-{% endblock %}
+</div>
+
+{% if proveedores %}
+{% for proveedor in proveedores %}
+<div class="modal fade" id="staticBackdrop-{{proveedor.0}}" data-bs-backdrop="static" data-bs-keyboard="false"
+        tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+                <div class="modal-content">
+                        <div class="modal-header">
+                                <h5 class="modal-title" id="staticBackdropLabel">Confirmar acción</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                                ¿Deseas eliminar a <strong>{{ proveedor[1] }} {{ proveedor[2] }}</strong>?
+                        </div>
+                        <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Cancelar</button>
+                                <a class="btn btn-danger" href="{{ url_for('proveedor_eliminar', id = proveedor[0]) }}"
+                                        class="btn-delete"><i class="fas fa-trash-alt"></i> Eliminar</a>
+                        </div>
+                </div>
+        </div>
+</div>
+{% endfor %}
+{% else %}
+{% endif %}
+
+{% endblock %}

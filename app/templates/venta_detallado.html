@@ -1,0 +1,47 @@
+{% extends './layout.html' %}
+{% block title %} Ay hola {% endblock %}
+{% block body %}
+
+<h2> Detalles Ventas</h2>
+
+
+<table class="table table-hover">
+        <thead>
+                <tr>
+                        <th class="text-center">Prenda </th>
+                        <th class="text-center">Vendedor </th>
+                        <th class="text-center">Creacion  </th>
+                </tr>
+        </thead>
+        <tbody>
+
+                <tr>
+
+                        <td class="text-center">
+                                {{ventas[1]}}
+                        </td>
+                        <td class="text-center">
+                                {{ventas[2]}}
+                        </td>
+                        <td class="text-center">
+                                {{ventas[3]}}
+                        </td>
+
+                </tr>
+
+        </tbody>
+</table>
+<div class="btn btn-outline-danger d-inline-flex align-items-center">
+        <!-- usuario_actualizar.html> -->
+        <a class="btn-act" href=""><img
+                src="{{ url_for('static',filename = 'img/edit.png') }}" alt="Editar" height="18">Editar</a>
+    </div>
+    <br>
+    <br>
+    <div class="btn btn-outline-danger d-inline-flex align-items-center">
+    
+        <a class="btn-act" href="{{url_for('ventas')}}"><img src="{{ url_for('static',filename = 'img/undo.svg') }}" alt="cancelar"
+                height="18">Cancelar</a>
+    </div>
+
+{% endblock %}

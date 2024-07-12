@@ -9,46 +9,77 @@
 <form method="POST" action="{{url_for('prendas_crear')}}">
   <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
 
-  <div class="form-group">
-    <label for="tipo_prenda">Tipo</label>
-    <input type="text" class="form-control" id="tipo_prenda" placeholder="ej.Camiseta" name="tipo_prenda">
-  </div>
+  <label for="categoria">Categoria</label>
+  <select name="categoria_prenda" id="categoria_prenda" class="form-select" aria-label="Default select example">
+    <option value="true" selected>------Seleccione el tipo--------</option>
+    {% if categorias %}
+    {% for categoria in categorias %}
+    <option value="{{categoria.0}}">{{categoria.1}}</option>
+    {% endfor %}
+    {% else %}
+    <option>Aún no hay registros</option>
+    {% endif %}
+  </select>
 
-  <div class="form-group">
-    <label for="talla_prenda">Talla</label>
-    <input type="text" class="form-control" id="talla_prenda" placeholder="ej.XXL" name="talla_prenda">
-  </div>
+  <label for="Color">Color</label>
+  <select name="color_prenda" id="color_prenda" class="form-select" aria-label="Default select example">
+    <option value="true" selected>------Seleccione el color--------</option>
+    {% if colores %}
+    {% for color in colores %}
+    <option value="{{color.0}}">{{color.1}}</option>
+    {% endfor %}
+    {% else %}
+    <option>Aún no hay registros</option>
+    {% endif %}
+  </select>
 
-  <div class="form-group">
-    <label for="color_prenda">Color</label>
-    <input type="text" class="form-control" id="color_prenda" placeholder="ej.Azul" name="color_prenda">
-  </div>
+  <label for="Tallas">Tallas</label>
+  <select name="talla_prenda" id="talla_prenda" class="form-select" aria-label="Default select example">
+    <option value="true" selected>------Seleccione la talla--------</option>
+    {% if tallas %}
+    {% for talla in tallas %}
+    <option value="{{talla.0}}">{{talla.1}}</option>
+    {% endfor %}
+    {% else %}
+    <option>Aún no hay registros</option>
+    {% endif %}
+  </select>
+
+  <label for="Marca">Marca</label>
+  <select name="marca_prenda" id="marca_prenda" class="form-select" aria-label="Default select example">
+    <option value="true" selected>------Seleccione la marca--------</option>
+    {% if marcas %}
+    {% for marca in marcas %}
+    <option value="{{marca.0}}">{{marca.1}}</option>
+    {% endfor %}
+    {% else %}
+    <option>Aún no hay registros</option>
+    {% endif %}
+  </select>
+
+  <label for="Proveedor">Proveedor</label>
+  <select name="nombre_prov" id="nombre_prov" class="form-select" aria-label="Default select example">
+    <option value="true" selected>------Seleccione el proveedor--------</option>
+    {% if proveedores %}
+    {% for proveedor in proveedores %}
+    <option value="{{proveedor.0}}">{{proveedor.1}}</option>
+    {% endfor %}
+    {% else %}
+    <option>Aún no hay registros</option>
+    {% endif %}
+  </select>
 
   <div class="form-group">
     <label for="precio_prenda">Precio</label>
-    <input type="text" class="form-control" id="precio_prenda" placeholder="ej.50" name="precio_prenda">
-  </div>
-
-  <div class="form-group">
-    <label for="marca_prenda">Marca</label>
-    <input type="text" class="form-control" id="marca_prenda" placeholder="ej.lacosteña" name="marca_prenda">
-  </div>
-
-  <div class="form-group">
-    <label for="stock">Stock</label>
-    <input type="text" class="form-control" id="stock" placeholder="ej.100" name="stock">
+    <input type="text" class="form-control" id="precio_prenda" placeholder="$ 0.00" name="precio_prenda">
   </div>
 
   <div class="form-group">
     <label for="codigo_prenda">Codigo</label>
-    <input type="text" class="form-control" id="codigo_prenda" placeholder="ej.A001" name="codigo_prenda">
+    <input type="text" class="form-control" id="codigo_prenda" placeholder="Codigo de barras" name="codigo_prod">
   </div>
 
-  <div class="form-group">
-    <label for="nombre_prov">Proveedor</label>
-    <input type="text" class="form-control" id="nombre_prov"
-      placeholder="en construccion solo funciona con id del Proveedor " name="nombre_prov">
-  </div>
+  <!-- ---------------------------------------------ACCIONES-------------------------------------------------- -->
   <br>
   <button class="btn btn-outline-danger d-inline-flex align-items-center" type="submit">
     Guardar

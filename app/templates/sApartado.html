@@ -4,18 +4,22 @@
 
 <h2>Sistema de Apartado</h2>
 <br>
-<a href="{{url_for('apartado_nuevo')}}" class="btn btn-outline-primary d-inline-flex align-items-center"><i></i> Nuevo</a>
+<a href="{{url_for('apartado_nuevo')}}" class="btn btn-outline-primary d-inline-flex align-items-center"><i></i>
+        Nuevo</a>
 <br><br>
 
 
 <table class="table table-hover">
         <thead>
                 <tr>
-                        <th class="text-center">Prenda </th>
+                        <th class="text-center">Ver </th>
                         <th class="text-center">Anticipo </th>
-                        <th class="text-center">Restan</th>
+                        <th class="text-center">Precio final</th>
                         <th class="text-center">Nombre del cliente </th>
-                        <th class="text-center">Tiempo limite </th>
+                        <th class="text-center">prenda</th>
+                        <th class="text-center">Fecha de apartado </th>
+                        <th class="text-center">Fecha limite </th>
+                        <th class="text-center">situacion </th>
                         <!-- ----------------------------ACCIONES--------------------- -->
                         <th class="text-center">Editar</th>
                         <th class="text-center">Borrar</th>
@@ -23,10 +27,21 @@
         </thead>
         <tbody>
                 {% for apartado in apartados %}
+                {% if apartado.9==true %}
+
                 <tr>
                         <td class="text-center">
-                                {{apartado[8]}}
+                                <div class="btn btn-outline-danger d-inline-flex align-items-center">
+
+                                        <a href="{{ url_for('apartado_detalle', id = apartado[0]) }}"><img
+                                                        src="{{ url_for('static',filename = 'img/eye.svg') }}"
+                                                        alt="borrar" height="18"></a>
+                                </div>
                         </td>
+
+
+
+
                         <td class="text-center">
                                 {{apartado[1]}}
                         </td>
@@ -35,27 +50,86 @@
                         </td>
 
                         <td class="text-center">
+                                {{apartado[3]}}
+                        </td>
+                        <td class="text-center">
                                 {{apartado[4]}}
                         </td>
                         <td class="text-center">
                                 {{apartado[6]}}
                         </td>
+                        <td class="text-center">
+                                {{apartado[7]}}
+                        </td>
+
+
+                        {% if apartado.9==true %}
+                        <td style="color: green">Activo </td>
+                        {% else %}
+                        <td style="color: red">inactivo</td>
+                        {% endif %}
+
+
+
+
+
                         <td>
                                 <div class="btn btn-outline-danger d-inline-flex align-items-center">
-                                        <a href="#"><img src="{{ url_for('static',filename = 'img/edit.png') }}"
+                                        <a href="{{ url_for('apartado_editar', id = apartado[0]) }}"><img
+                                                        src="{{ url_for('static',filename = 'img/edit.png') }}"
                                                         alt="Editar" height="18"></a>
                                 </div>
 
+
                         </td>
-                        <td>
-                                <div class="btn btn-outline-danger d-inline-flex align-items-center">
-                                        <a href="#"><img src="{{ url_for('static',filename = 'img/delete.png') }}"
-                                                        alt="borrar" height="18"></a>
-                                </div>
+                        <td class="text-center">
+                                <button type="button" class="btn btn-outline-danger d-inline-flex align-items-center"
+                                        data-bs-toggle="modal" data-bs-target="#staticBackdrop-{{apartado.0}}"><img
+                                                src="{{ url_for('static',filename = 'img/delete.png') }}" alt="borrar"
+                                                height="18">
+                                </button>
                         </td>
+
                 </tr>
+                {% else %}
+                {% endif %}
+
                 {% endfor %}
         </tbody>
 </table>
+<div class="btn btn-outline-danger d-inline-flex align-items-center">
+
+        <a href="{{url_for('apartado_papelera')}}"><img
+                        src="{{ url_for('static',filename = 'img/trash.svg') }}"
+                        alt="papelera" height="18"></a>
+</div>
+{% if apartados %}
+{% for apartado in apartados %}
+<div class="modal fade" id="staticBackdrop-{{apartado.0}}" data-bs-backdrop="static" data-bs-keyboard="false"
+        tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+                <div class="modal-content">
+                        <div class="modal-header">
+                                <h5 class="modal-title" id="staticBackdropLabel">Confirmar acción</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                                ¿Deseas eliminar a <strong> nombre: {{ apartado[4] }} anticipo: {{ apartado[2] }} precio
+                                        final: {{ apartado[3] }}</strong>?
+                        </div>
+                        <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Cancelar</button>
+                                <a class="btn btn-danger" href="{{ url_for('apartado_eliminar', id = apartado[0]) }}"
+                                        class="btn-delete"><i class="fas fa-trash-alt"></i> Eliminar</a>
+                        </div>
+                </div>
+        </div>
+</div>
+{% endfor %}
+{% else %}
+{% endif %}
+
 
 {% endblock %}

@@ -1,0 +1,59 @@
+/* sesion.css */
+
+/* General Styles */
+body {
+    background-color: #b02b2c;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    max-width: 400px;
+    margin: 80px auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Form Styles */
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333333;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: #555555;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #dddddd;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.btn {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    color: #ffffff;
+    background-color: #dc3545;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background-color: #c82333;
+}
+
+.btn:focus {
+    outline: none;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}

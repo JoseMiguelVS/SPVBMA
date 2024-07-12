@@ -15,18 +15,18 @@
   </div>
 
   <div class="form-group">
-    <label for="apellido_usuario">Apellido</label>
-    <input type="text" class="form-control" id="apellido_usuario" placeholder="Apellido" name="apellido_usuario">
+    <label for="apellido_usuario">Apellido  Paterno</label>
+    <input type="text" class="form-control" id="apellido_usuario" placeholder="Apellido Paterno" name="apellido_paterno">
   </div>
 
   <div class="form-group">
-    <label for="celular_usuario">Celular</label>
+    <label for="apellido_usuario">Apellido Materno</label>
+    <input type="text" class="form-control" id="apellido_usuario" placeholder="Apellido Materno" name="apellido_materno">
+  </div>
+
+  <div class="form-group">
+    <label for="celular_usuario">Numero de telefono</label>
     <input type="text" class="form-control" id="celular_usuario" placeholder="Numero" name="celular_usuario">
-  </div>
-
-  <div class="form-group">
-    <label for="cargo">Cargo</label>
-    <input type="text" class="form-control" id="cargo" placeholder="Rol" name="cargo">
   </div>
 
   <div class="form-group">
@@ -43,10 +43,24 @@
     <label for="correo_electronico">Correo Electronico</label>
     <input type="text" class="form-control" id="correo_electronico" placeholder="Gmail" name="correo_electronico">
   </div>
+<!-- -----------------------------------------------------desplegable------------------------------------------------ -->
+<label for="Cargo">Cargo</label>
+<select name="id_rol" id="id_rol" class="form-select" aria-label="Default select example">
+  <option value="true" selected>------Seleccione el cargo--------</option>
+  {% if roles %}
+    {% for rol in roles %}
+    <option value="{{rol.0}}">{{rol.1}}</option>
+    {% endfor %}
+  {% else %}
+    <option>Aún no hay registros</option>
+  {% endif %}
+</select>
+<!-- ---------------------------------------------------------------------------------------------------------------- -->
   <br>
   <button class="btn btn-outline-danger d-inline-flex align-items-center" type="submit">
     Guardar
   </button>
+  
   <a class="btn btn-outline-danger d-inline-flex align-items-center" href="{{url_for('usuarios')}}">
     Cancelar
   </a>

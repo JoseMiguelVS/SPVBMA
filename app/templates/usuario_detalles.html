@@ -1,49 +1,54 @@
 {% extends './layout.html' %}
 {% block title %} Ay hola {% endblock %}
 {% block body %}
-
-<table class="table">
+<p class="fc">Fecha creacion: {{usuarios[10]}}</p>
+<p class="fc">Fecha modificacion: {{usuarios[11]}}</p>
+<table class="table-bordered table-responsive">
 
     <thead>
         <tr>
             <th class="text-center">Nombre </th>
-            <th class="text-center">Apellidos </th>
+            <th class="text-center">Apellido Paterno</th>
+            <th class="text-center">Apellidos Materno</th>
             <th class="text-center">Celular </th>
-            <th class="text-center">Cargo </th>
             <th class="text-center">Domicilo </th>
             <th class="text-center">Contraseña </th>
             <th class="text-center">Correo Electronico </th>
+            <th class="text-center">Cargo</th>
         </tr>
     </thead>
     <tbody>
         <tr>
 
-            <td>
+            <td class="text-center">
                 {{usuarios[1]}}
             </td>
-            <td>
+            <td class="text-center">
                 {{usuarios[2]}}
             </td>
-            <td>
+            <td class="text-center">
                 {{usuarios[3]}}
             </td>
-            <td>
+            <td class="text-center">
                 {{usuarios[4]}}
             </td>
-            <td>
+            <td class="text-center">
                 {{usuarios[5]}}
             </td>
-            <td>
+            <td class="text-center">
                 {{usuarios[6]}}
             </td>
-            <td>
+            <td class="text-center">
                 {{usuarios[7]}}
+            </td>
+            <td class="text-center">
+                {{usuarios[13]}}
             </td>
 
         </tr>
     </tbody>
 </table>
-
+<br>
 <div class="btn btn-outline-danger d-inline-flex align-items-center">
     <!-- usuario_actualizar.html> -->
     <a class="btn-act" href="{{ url_for('usuarios_editar', id = usuarios[0]) }}"><img

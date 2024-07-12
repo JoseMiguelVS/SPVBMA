@@ -3,65 +3,171 @@
 {% block body %}
 
 <h2>Prendas</h2>
+
+<!-- -----------------Alertas de registro, editado, borrado y restaurado---------------------------- -->
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-{% if " Error" in message %}danger {% elif "Advertencia" in message %}warning {% else %}success
+        {% endif %} alert-dismissible fade show" role="alert">
+        <strong>{{message}}</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
+
 <br>
-<a href="{{url_for('prenda_nuevo')}}" class="btn btn-outline-primary d-inline-flex align-items-center"> Nuevo</a>
+<a href="{{url_for('prenda_nuevo')}}" class="btn btn-outline-danger d-inline-flex align-items-center"> Nuevo</a>
 <br><br>
 
-<table class="table table-hover">
+<table class="table-bordered table-responsive">
         <thead>
                 <tr>
 
+                        <th class="text-center">Ver </th>
                         <th class="text-center">Categoria </th>
                         <th class="text-center">Talla </th>
                         <th class="text-center">Color </th>
                         <th class="text-center">Precio </th>
-                        <th class="text-center">Codigo </th>
+                        <th class="text-center">Marca </th>
                         <!-- ------------------------------------------ACCIONES-------------------------------------------- -->
                         <th class="text-center">Editar</th>
-                        <th class="text-center">borrar</th>
+                        <th class="text-center">Borrar</th>
                 </tr>
         </thead>
         <tbody>
+
                 {% for prenda in prendas %}
+                {% if prenda.estado==true %}
                 <tr>
                         <td class="text-center">
-                                {{prenda[1]}}
+                                <div class="btn btn-outline-danger d-inline-flex align-items-center">
+                                        <a href="{{ url_for('prendas_detalles', id = prenda.id_prenda) }}"><img
+                                                        src="{{ url_for('static',filename = 'img/eye.svg') }}"
+                                                        alt="borrar" height="18"></a>
+                                </div>
+                        </td>
+                        <!-- categoria -->
+                        <td class="text-center">
+                                {{prenda.categoria}}
 
                         </td>
-
+                        <!-- talla -->
                         <td class="text-center">
-                                {{prenda[2]}}
+                                {{prenda.talla}}
                         </td>
-
+                        <!-- color -->
                         <td class="text-center">
-                                {{prenda[3]}}
+                                {{prenda.color}}
                         </td>
-
+                        <!-- precio -->
                         <td class="text-center">
-                                {{prenda[4]}}
+                                {{prenda.precio_prenda}}
                         </td>
-
+                        <!-- marca -->
                         <td class="text-center">
-                                {{prenda[7]}}
+                                {{prenda.nombre_marca}}
                         </td>
 
                         <td>
                                 <div class="btn btn-outline-danger d-inline-flex align-items-center">
-                                        <a href="#"><img src="{{ url_for('static',filename = 'img/edit.png') }}"
+                                        <a href="{{ url_for('prendas_editar', id = prenda.id_prenda) }}"><img
+                                                        src="{{ url_for('static',filename = 'img/edit.png') }}"
                                                         alt="Editar" height="18"></a>
                                 </div>
                         </td>
-                        <td>
-                                <div class="btn btn-outline-danger d-inline-flex align-items-center">
-                                        <a href="#"><img src="{{ url_for('static',filename = 'img/delete.png') }}"
-                                                        alt="borrar" height="18"></a>
-                                </div>
-
+                        <td class="text-center">
+                                <button type="button" class="btn btn-outline-danger d-inline-flex align-items-center"
+                                        data-bs-toggle="modal" data-bs-target="#staticBackdrop-{{prenda.id_prenda}}"><img
+                                                src="{{ url_for('static',filename = 'img/delete.png') }}" alt="borrar"
+                                                height="18">
+                                </button>
                         </td>
 
                 </tr>
+                {% endif %}
                 {% endfor %}
         </tbody>
 </table>
+<br>
+<!-- --------------------------------------------------------FUNCION DE PAGINADOR--------------------------------- -->
+<nav aria-label="Page navigation example">
+        <ul class="pagination justify-content-center">
+                {% if page > 1 %}
+                <li class="page-item">
+                        <a class="page-link" href="{{ url_for('prendas') }}?page={{ page - 1 }}&per_page={{ per_page }}"
+                                aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                        </a>
+                </li>
+                {% if page != 1 and page != 2 %}
+                <li class="page-item"><a class="page-link" href="{{url_for('prendas')}}">1</a></li>
+                {% if page != 3 %}
+                <li class="page-item"><a class="page-link disabled">...</a></li>
+                {% endif %}
+                {% endif %}
+                <li class="page-item"><a class="page-link"
+                                href="{{url_for('prendas')}}?page={{ page - 1 }}&per_page={{ per_page }}">{{page-1}}</a>
+                </li>
+                {% endif %}
+
+                <li class="page-item"><a class="page-link active" href="#">{{page}}</a></li>
+
+                {% if page < total_pages %} <li class="page-item"><a class="page-link"
+                                href="{{url_for('prendas')}}?page={{ page + 1 }}&per_page={{ per_page }}">{{page+1}}</a>
+                        </li>
+                        {% if page != total_pages and page != total_pages-1 %}
+                        {% if page != total_pages-2 %}
+                        <li class="page-item"><a class="page-link disabled">...</a></li>
+                        {% endif %}
+                        <li class="page-item"><a class="page-link"
+                                        href="{{url_for('prendas')}}?page={{ total_pages }}&per_page={{ per_page }}">{{total_pages}}</a>
+                        </li>
+                        {% endif %}
+                        <li class="page-item">
+                                <a class="page-link"
+                                        href="{{url_for('prendas')}}?page={{ page + 1 }}&per_page={{ per_page }}"
+                                        aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                </a>
+                        </li>
+                        {% endif %}
+        </ul>
+</nav>
+
+<div>
+        <br>
+        <a href="{{ url_for('prenda_papelera') }}"
+                class="btn btn-outline-danger d-inline-flex align-items-center">Papelera<img
+                        src="{{ url_for('static',filename = 'img/trash.svg') }}" alt="papelera" height="18"></a>
+</div>
+<!-- -----------------------------------------------------MODAL------------------------------------------------------ -->
+{% if prendas %}
+{% for prenda in prendas %}
+<div class="modal fade" id="staticBackdrop-{{prenda.id_prenda}}" data-bs-backdrop="static" data-bs-keyboard="false"
+        tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+                <div class="modal-content">
+                        <div class="modal-header">
+                                <h5 class="modal-title" id="staticBackdropLabel">Confirmar acción</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                                ¿Deseas eliminar a <strong>{{ prenda.categoria }}-{{ prenda.talla }}-{{ prenda.color }}</strong>?
+                        </div>
+                        <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Cancelar</button>
+                                <a class="btn btn-danger" href="{{ url_for('prendas_eliminar', id = prenda.id_prenda) }}"
+                                        class="btn-delete"><i class="fas fa-trash-alt"></i> Eliminar</a>
+                        </div>
+                </div>
+        </div>
+</div>
+{% endfor %}
+{% else %}
+{% endif %}
 
 {% endblock %}

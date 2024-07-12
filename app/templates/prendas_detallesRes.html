@@ -1,0 +1,66 @@
+{% extends './layout.html' %}
+{% block title %} Ay hola {% endblock %}
+{% block body %}
+<p class="fc">Fecha creacion: {{prendas[6]}}</p>
+<p class="fc">Fecha modificacion: {{prendas[7]}}</p>
+<table class="table">
+
+    <thead>
+        <tr>
+            <th class="text-center">Categoria </th>
+            <th class="text-center">Talla </th>
+            <th class="text-center">Marca</th>
+            <th class="text-center">Color </th>
+            <th class="text-center">Precio </th>
+            <th class="text-center">Proveedor </th>
+            <th class="text-center">Codigo</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <!-- Categoria -->
+            <td class="text-center">
+                {{prendas[3]}}
+            </td>
+            <!-- Talla -->
+            <td class="text-center">
+                {{prendas[9]}}
+            </td>
+            <!-- Marca -->
+            <td class="text-center">
+                {{prendas[4]}}
+            </td>
+            <!-- Color -->
+            <td class="text-center">
+                {{prendas[8]}}
+            </td>
+            <!-- Precio -->
+            <td class="text-center">
+                {{prendas[10]}}
+            </td>
+            <!-- proveedor -->
+            <td class="text-center">
+                {{prendas[2]}}
+            </td>
+            <!-- codigo -->
+            <td class="text-center">
+                {{prendas[1]}}
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+
+<div class="btn btn-outline-danger d-inline-flex align-items-center">
+    <!-- usuario_actualizar.html> -->
+    <a class="btn-act" href="{{ url_for('prendas_restaurar', id = prendas[0]) }}"><img
+            src="{{ url_for('static',filename = 'img/restart.svg') }}" alt="Restaurar" height="18">Restaurar</a>
+</div>
+<br>
+<br>
+<div class="btn btn-outline-danger d-inline-flex align-items-center">
+
+    <a class="btn-act" href="{{url_for('prendas')}}"><img src="{{ url_for('static',filename = 'img/undo.svg') }}"
+            alt="cancelar" height="18">Cancelar</a>
+</div>
+{% endblock %}

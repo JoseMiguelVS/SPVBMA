@@ -3,23 +3,38 @@
 {% block body %}
 
 <h2>Usuarios</h2>
+
+<!-- -----------------Alertas de registro, editado, borrado y restaurado---------------------------- -->
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-{% if " Error" in message %}danger {% elif "Advertencia" in message %}warning {% else %}success
+        {% endif %} alert-dismissible fade show" role="alert">
+        <strong>{{message}}</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
+
 <br>
-<a href="{{url_for('usuario_nuevo')}}" class="btn btn-outline-danger d-inline-flex align-items-center"><i></i> Nuevo</a>
+<a href="{{url_for('usuario_nuevo')}}" class="btn btn-outline-danger d-inline-flex align-items-center">Nuevo</a>
 <br><br>
 
-<table class="table">
+<table class="table-bordered table-responsive">
         <thead>
                 <tr>
                         <th class="text-center">Ver</th>
                         <th class="text-center">Nombre </th>
-                        <th class="text-center">Apellidos </th>
-                        <th class="text-center">Celular </th>
+                        <th class="text-center">Apellido Paterno </th>
+                        <th class="text-center">Apellido Materno </th>
                         <th class="text-center">Editar</th>
                         <th class="text-center">Borrar</th>
                 </tr>
         </thead>
         <tbody>
                 {% for usuario in usuarios %}
+                {% if usuario.9 == True %}
                 <tr>
                         <td class="text-center">
                                 <div class="btn btn-outline-danger d-inline-flex align-items-center">
@@ -54,9 +69,16 @@
                                 </button>
                         </td>
                 </tr>
+                {% endif %}
                 {% endfor %}
         </tbody>
 </table>
+<div>
+<br>
+        <a href="{{ url_for('usuarios_papelera') }}"
+                class="btn btn-outline-danger d-inline-flex align-items-center">Papelera<img
+                        src="{{ url_for('static',filename = 'img/trash.svg') }}" alt="papelera" height="18"></a>
+</div>
 
 {% if usuarios %}
 {% for usuario in usuarios %}
@@ -70,13 +92,13 @@
                                         aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                                ¿Deseas eliminar a <strong>{{ usuario[1] }} {{ usuario[2] }} {{ usuario[3] }}</strong>?
+                                ¿Deseas eliminar a <strong>{{ usuario[1] }} {{ usuario[2] }}</strong>?
                         </div>
                         <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary"
                                         data-bs-dismiss="modal">Cancelar</button>
                                 <a class="btn btn-danger" href="{{ url_for('usuarios_eliminar', id = usuario[0]) }}"
-                                        class="btn-delete"><i class="fas fa-trash-alt"></i> Eliminar</a>
+                                        class="btn-delete"><i class="fas fa-trash-alt"></i>Eliminar</a>
                         </div>
                 </div>
         </div>

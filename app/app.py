@@ -1,40 +1,169 @@
 import os
 import psycopg2
-from flask import Flask, render_template, url_for, redirect, request, flash
+from psycopg2.extras import RealDictCursor
+from datetime import datetime
+from werkzeug.utils import secure_filename
+from flask import Flask, render_template, url_for, redirect, request, flash, Blueprint, jsonify
 from flask_wtf.csrf import CSRFProtect
+from werkzeug.security import generate_password_hash
+from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+from Models.ModelUser import ModuleUser
+from Models.entities.user import User
 
 app = Flask(__name__)
-csrf=CSRFProtect()
+csrf=CSRFProtect() 
     #----------------------conexion---------------------------------------------
 
 def get_db_connection():
-
     try:
         conn = psycopg2.connect(host='localhost',
-                                dbname='SPVBMAH',
+                                dbname='SPVBMA',
                                 user=os.environ['db_username'],
                                 password=os.environ['db_password'])
         return conn
     except psycopg2.Error as error:
         print(f"error de conexion: {error}")
         return None
+#---------------------------------LOGIN------------------------------------------
+Login_manager_app=LoginManager(app)
+@Login_manager_app.user_loader
+def load_user(idusuarios):
+    return ModuleUser.get_by_id(get_db_connection(),idusuarios)
+
 app.secret_key='chistosa'
+
 @app.route("/")
 def index():
+    return render_template('index.html')
 
-    titulo = "orales"
-    return render_template('index.html', titulo=titulo,) 
-       
-    #--------------------------------------inicio de sesion -------------------------------------
-@app.route("/sesion")
-def sesion():
+@app.route 
+#------------------------------------------consulta de prendas-------------------------------------------
+def lista_prendas():
+    conn=get_db_connection()
+    cur=conn.cursor()
+    cur.execute("SELECT * FROM prenda ORDER BY id_prenda")
+    prendas=cur.fetchall()
+    cur.close()
+    conn.close()
+    return prendas
+# ----------------------------------consulta de categorias (lista desplegable)-----------------------------------------------
+def lista_categorias():
+    conn=get_db_connection()
+    cur=conn.cursor()
+    cur.execute('SELECT * FROM categoria ORDER BY id_categoria ASC ')
+    categorias=cur.fetchall()
+    cur.close()
+    conn.close()
+    return categorias
+# ----------------------------------consulta de roles (lista desplegable)-----------------------------------------------
+def lista_rol():
+    conn=get_db_connection()
+    cur=conn.cursor()
+    cur.execute('SELECT * FROM roles ORDER BY id_rol ASC ')
+    roles=cur.fetchall()
+    cur.close()
+    conn.close()
+    return roles
+#-------------------------------------consulta de tallas---------------------------------------------------------------
+def lista_tallas():
+    conn=get_db_connection()
+    cur=conn.cursor()
+    cur.execute('SELECT * FROM tallas ORDER BY id_tallas ASC')
+    tallas=cur.fetchall()
+    cur.close()
+    conn.close()
+    return tallas
+#-------------------------------------consulta de colores---------------------------------------------------------------
+def lista_colores():
+    conn=get_db_connection()
+    cur=conn.cursor()
+    cur.execute('SELECT * FROM colores ORDER BY id_color ASC')
+    colores=cur.fetchall()
+    cur.close()
+    conn.close()
+    return colores
+#----------------------------------consulta de marcas------------------------------------------------------------------
+def lista_marcas():
+    conn=get_db_connection()
+    cur=conn.cursor()
+    cur.execute('SELECT * FROM marcas ORDER BY id_marca ASC')
+    marcas=cur.fetchall()
+    cur.close()
+    conn.close()
+    return marcas
+#---------------------------------------consulta de proveedor-----------------------------------------------------
+def lista_proveedores():
+    conn=get_db_connection()
+    cur=conn.cursor()
+    cur.execute('SELECT * FROM proveedores ORDER BY id_proveedores ASC')
+    proveedores=cur.fetchall()
+    cur.close()
+    conn.close()
+    return proveedores
+#-------------------------------------------consulta de detalles apartado--------------------------------------
+def detapar():
+    conn = get_db_connection()  
+    cur = conn.cursor()
+    cur.execute('SELECT * FROM apade ORDER BY categoria ASC;')
+    detapas = cur.fetchall()
+    cur.close()
+    conn.close()
+    return detapas
+#-----------------------------------------------------PAGINADOR---------------------------------------------------------
+def paginador(sql_count,sql_lim,in_page,per_pages):
+    page = request.args.get('page', in_page, type=int)
+    per_page = request.args.get('per_page', per_pages, type=int)
+
+    offset = (page - 1) * per_page
+
+    conn = get_db_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    
+    cursor.execute(sql_count)
+    total_items = cursor.fetchone()['count']
+
+    cursor.execute(sql_lim, (per_page, offset))
+    items = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    total_pages = (total_items + per_page - 1) // per_page
+
+    return items, page, per_page, total_items, total_pages
+
+#--------------------------------------------------------inicio de sesion --------------------------------------------
+@app.route("/login")
+def login():
     return render_template('sesion.html')
-    #--------------------------------------------- CRUD usuarios ---------------------------------------
+
+@app.route('/loguear', methods=('GET','POST'))
+def loguear():
+    if request.method == 'POST':
+        nombre_usuario=request.form['nombre_usuario']
+        contrasenia=request.form['contrasenia']
+        user=User(0,nombre_usuario,contrasenia,None,None,None,None,None,None,None,None,None)
+        loged_user=ModuleUser.login(get_db_connection(),user)
+
+        if loged_user!= None:
+            if loged_user.contrasenia:
+                login_user(loged_user)
+                return redirect(url_for('dashboard'))
+            else:
+                flash('Nombre de usuario y/o contraseña incorrecta.')
+                return redirect(url_for('login'))
+        else:
+            flash('Nombre de usuario y/o contraseña incorrecta.')
+            return redirect(url_for('login'))
+    else:
+        return redirect(url_for('login'))
+#------------------------------------------------- CRUD usuarios --------------------------------------------------------
 @app.route("/usuarios")
+@login_required 
 def usuarios():
     conn = get_db_connection()
     cur= conn.cursor()
-    cur.execute('SELECT * FROM usuarios;')
+    cur.execute('SELECT * FROM usuarios ORDER BY id_usuario;')
     print("--------------------")
     print("ESTO ES LA CONSULTA")
     usuarios = cur.fetchall()
@@ -46,50 +175,103 @@ def usuarios():
     conn.close()
     return render_template('usuarios.html',usuarios=usuarios)
 
+@app.route("/usuarios/papelera")
+@login_required
+def usuarios_papelera():
+    conn = get_db_connection()
+    cur= conn.cursor()
+    cur.execute('SELECT * FROM usuarios ORDER BY id_usuario;')
+    print("--------------------")
+    print("ESTO ES LA CONSULTA")
+    usuarios = cur.fetchall()
+    for usuario in usuarios:
+        print("--------------------------")
+        print(usuario)
+        print("--------------------------")
+    cur.close()
+    conn.close()
+    return render_template('usuarios_papelera.html',usuarios=usuarios)
+
 @app.route("/usuarios/nuevo")
+@login_required
 def usuario_nuevo():
     titulo = "Nuevo usuario"
-    return render_template('usuario_nuevo.html', titulo=titulo)
+    return render_template('usuario_nuevo.html', titulo=titulo, roles=lista_rol())
 
 @app.route('/usuarios/crear', methods=('GET', 'POST'))
+@login_required
 def usuarios_crear():
     if request.method == 'POST':
         nombre_usuario= request.form['nombre_usuario']
-        apellido_usuario= request.form['apellido_usuario']
+        apellido_paterno= request.form['apellido_paterno']
+        apellido_materno= request.form['apellido_materno']
         celular_usuario= request.form['celular_usuario']
-        cargo= request.form['cargo']
         domicilio_usuario= request.form['domicilio_usuario']
         contrasenia= request.form['contrasenia']
         correo_electronico= request.form['correo_electronico']
+        rol= request.form['id_rol']
+        estado = True
+        creado = datetime.now()
+        editado =datetime.now() 
 
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute('INSERT INTO usuarios (nombre_usuario ,apellido_usuario, celular_usuario, cargo, domicilio_usuario,contrasenia,correo_electronico)'
-                    'VALUES (%s, %s, %s, %s, %s, %s, %s)',
-                    (nombre_usuario,apellido_usuario,celular_usuario,cargo,domicilio_usuario,contrasenia,correo_electronico))
+        cur.execute('INSERT INTO usuarios(nombre_usuario, apellido_paterno, apellido_materno, celular_usuario, domicilo_usuario, contrasenia, correo_electronico, rol, estado, creado, editado)'
+                    'VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);',
+                    (nombre_usuario,apellido_paterno,apellido_materno,celular_usuario,domicilio_usuario,contrasenia,correo_electronico,rol,estado,creado,editado))
         conn.commit()
         cur.close()
         conn.close()
 
         flash('¡Usuario agregado exitosamente!')
-
         return redirect(url_for('usuarios'))
-
     return redirect(url_for('usuario_nuevo'))
 
 @app.route('/usuarios/<string:id>')
+@login_required
 def usuarios_detalles(id):
     titulo="Detalles de usuario"
     conn=get_db_connection()
     cur=conn.cursor()
-    cur.execute('SELECT * FROM usuarios WHERE id_usuario={0}'.format(id))
+    cur.execute('SELECT * FROM usuarios INNER JOIN roles ON roles.id_rol=usuarios.rol WHERE id_usuario={0}'.format(id))
     usuarios=cur.fetchall()
     conn.commit()
     cur.close()
     conn.close()
     return render_template('usuario_detalles.html',titulo=titulo, usuarios=usuarios[0])
 
+@app.route('/usuarios/papelera/<string:id>')
+@login_required
+def usuarios_detallesRes(id):
+    titulo="Detalles de usuario"
+    conn=get_db_connection()
+    cur=conn.cursor()
+    cur.execute('SELECT * FROM usuarios INNER JOIN roles  ON roles.id_rol=usuarios.rol WHERE id_usuario={0}'.format(id))
+    usuarios=cur.fetchall()
+    conn.commit()
+    cur.close()
+    conn.close()
+    return render_template('usuario_detallesRes.html',titulo=titulo, usuarios=usuarios[0])
+
+@app.route('/usuarios/restaurar/<string:id>')
+@login_required
+def usuarios_restaurar(id):
+    estado = True
+    editado = datetime.now()
+    conn = get_db_connection()
+    cur = conn.cursor()
+    #sql="DELETE FROM usuarios WHERE id_usuario={0}".format(id)
+    sql="UPDATE usuarios SET  estado=%s,editado=%s WHERE id_usuario=%s"
+    valores=(estado,editado,id)
+    cur.execute(sql,valores)
+    conn.commit()
+    cur.close()
+    conn.close()
+    flash('Usuario restaurado')
+    return redirect(url_for('usuarios'))
+
 @app.route('/usuarios/editar/<string:id>')
+@login_required
 def usuarios_editar(id):
     titulo="Editar Usuario"
     conn=get_db_connection()
@@ -99,44 +281,54 @@ def usuarios_editar(id):
     conn.commit()
     cur.close()
     conn.close()
-    return render_template('usuarios_editar.html',titulo=titulo, usuarios=usuarios[0])
+    return render_template('usuarios_editar.html',titulo=titulo, usuarios=usuarios[0],roles=lista_rol())
 
 @app.route('/usuarios/editar/<string:id>', methods=['POST'])
+@login_required
 def usuarios_actualizar(id):
     if request.method == 'POST':
         nombre_usuario= request.form['nombre_usuario']
-        apellido_usuario= request.form['apellido_usuario']
+        apellido_paterno= request.form['apellido_paterno']
+        apellido_materno= request.form['apellido_materno']
         celular_usuario= request.form['celular_usuario']
-        cargo= request.form['cargo']
         domicilio_usuario= request.form['domicilio_usuario']
         contrasenia= request.form['contrasenia']
         correo_electronico= request.form['correo_electronico']
+        rol= request.form['id_rol']
+        estado = True
+        editado =datetime.now() 
 
         conn=get_db_connection()
         cur=conn.cursor()
-        sql="UPDATE usuarios SET nombre_usuario=%s,apellido_usuario=%s,celular_usuario=%s,cargo=%s,domicilio_usuario=%s,contrasenia=%s,correo_electronico=%s WHERE id_usuario=%s"
-        valores=(nombre_usuario,apellido_usuario,celular_usuario,cargo,domicilio_usuario,contrasenia, correo_electronico,id)
+        sql="UPDATE public.usuarios SET nombre_usuario=%s, apellido_paterno=%s, apellido_materno=%s, celular_usuario=%s, domicilo_usuario=%s, contrasenia=%s, correo_electronico=%s, rol=%s, editado=%s WHERE id_usuario=%s"
+        valores=(nombre_usuario,apellido_paterno,apellido_materno,celular_usuario,domicilio_usuario,contrasenia, correo_electronico,rol,editado,id)
         cur.execute(sql,valores)
         conn.commit()
         cur.close()
         conn.close()
         flash("usuario editado correctamente")
-
     return redirect(url_for('usuarios'))
 
 @app.route('/usuarios/eliminar/<string:id>')
+@login_required
 def usuarios_eliminar(id):
+    estado=False
+    editado = datetime.now()
     conn = get_db_connection()
     cur = conn.cursor()
-    sql="DELETE FROM usuarios WHERE id_usuario={0}".format(id)
-    cur.execute(sql)
+    #sql="DELETE FROM usuarios WHERE id_usuario={0}".format(id)
+    sql="UPDATE usuarios SET  estado=%s, editado=%s WHERE id_usuario=%s"
+    valores=(estado,editado,id)
+    cur.execute(sql,valores)
     conn.commit()
     cur.close()
     conn.close()
     flash('Usuario eliminado')
     return redirect(url_for('usuarios'))
-    #------------------------ CRUD proveedores ------------------------------------------------------------
+
+#---------------------------------------- CRUD proveedores ------------------------------------------------------------
 @app.route("/proveedores")
+@login_required
 def proveedores():
     conn = get_db_connection()
     cur= conn.cursor()
@@ -150,44 +342,260 @@ def proveedores():
         print("--------------------------")
     cur.close()
     conn.close()
-    return render_template('proveedores.html', proveedores = proveedores)
+    return render_template('proveedores.html',proveedores=proveedores)
 
 @app.route("/proveedores/nuevo")
-def proveedor_nuevo():
+@login_required
+def proveedores_nuevo():
     titulo = "Nuevo proveedor"
-    return render_template('proveedor_nuevo.html', titulo=titulo)
+    return render_template('proveedores_nuevo.html', titulo=titulo)
 
 @app.route('/proveedores/crear', methods=('GET', 'POST'))
+@login_required
 def proveedores_crear():
     if request.method == 'POST':
-        nombre_proveedor= request.form['nombre_proveedor']
-        celular_proveedor= request.form['celular_proveedor']
-
+        nombre_proveedor= request.form['nombre']
+        celular_proveedor= request.form['celular']
+        estado=True
+        creado= datetime.now()
+        modificado = datetime.now()
 
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute('INSERT INTO proveedores (nombre_proveedor, celular_proveedor)'
-                    'VALUES (%s, %s)',
-                    (nombre_proveedor, celular_proveedor))
+        cur.execute('INSERT INTO proveedores (nombre_proveedor , celular_proveedor, estado, creado, modificado)'
+                    'VALUES (%s, %s, %s, %s, %s)',
+                    (nombre_proveedor,celular_proveedor, estado, creado, modificado))
         conn.commit()
         cur.close()
         conn.close()
-
-        flash('¡Proveedor agregado exitosamente!')
-
+        flash('proveedor agregado exitosamente!')
         return redirect(url_for('proveedores'))
+    return redirect(url_for('proveedores_nuevo'))
 
-    return redirect(url_for('proveedor_nuevo'))
+@app.route('/proveedores/<string:id>')
+@login_required
+def proveedores_detalles(id):
+    titulo="Detalles de proveedor"
+    conn=get_db_connection()
+    cur=conn.cursor()
+    cur.execute('SELECT * FROM proveedores WHERE id_proveedores={0}'.format(id))
+    proveedores=cur.fetchall()
+    conn.commit()
+    cur.close()
+    conn.close()
+    return render_template('proveedores_detalles.html',titulo=titulo, proveedores=proveedores[0])
 
+@app.route('/proveedores/detalles/<string:id>')
+@login_required
+def proveedores_detallesRes(id):
+    titulo="Detalles de proveedor"
+    conn=get_db_connection()
+    cur=conn.cursor()
+    cur.execute('SELECT * FROM proveedores WHERE id_proveedores={0}'.format(id))
+    proveedores=cur.fetchall()
+    conn.commit()
+    cur.close()
+    conn.close()
+    return render_template('proveedores_detallesRes.html',titulo=titulo, proveedores=proveedores[0])
 
+@app.route('/proveedores/editar/<string:id>')
+@login_required
+def proveedores_editar(id):
+    titulo="Editar Proveedor"
+    conn=get_db_connection()
+    cur=conn.cursor()
+    cur.execute('SELECT * FROM proveedores WHERE id_proveedores={0}'.format(id))
+    proveedores=cur.fetchall()
+    conn.commit()
+    cur.close()
+    conn.close()
+    return render_template('proveedores_editar.html',titulo=titulo, proveedor=proveedores[0])
 
-    #--------------------------------CRUD prendas ----------------------------------------------------------
+@app.route('/proveedores/editar/<string:id>', methods=['POST'])
+@login_required
+def proveedores_actualizar(id):
+    if request.method == 'POST':
+        nombre_proveedor= request.form['nombre_proveedor']
+        celular_proveedor= request.form['celular_proveedor']
+        estado=True
+        creado= datetime.now()
+        modificado = datetime.now()
 
-@app.route("/prendas")
-def prendas():
+        conn=get_db_connection()
+        cur=conn.cursor()
+        sql="UPDATE proveedores SET nombre_proveedor=%s,celular_proveedor=%s, estado=%s,creado=%s,modificado=%s WHERE id_proveedores=%s"
+        valores=(nombre_proveedor,celular_proveedor, estado, creado, modificado, id)
+        cur.execute(sql,valores)
+        conn.commit()
+        cur.close()
+        conn.close()
+        flash("proveedor editado correctamente")
+    return redirect(url_for('proveedores'))
+
+@app.route('/proveedores/eliminar/<string:id>')
+@login_required
+def proveedor_eliminar(id):
+    estado=False
+    modificado= datetime.now()
+    conn = get_db_connection()
+    cur = conn.cursor()
+    #sql="DELETE FROM proveedores WHERE id_proveedores={0}".format(id)
+    sql="UPDATE proveedores SET estado=%s, modificado=%s WHERE id_proveedores=%s"
+    valores=(estado,modificado,id)
+    cur.execute(sql,valores)
+    conn.commit()
+    cur.close()
+    conn.close()
+    flash('Proveedor eliminado')
+    return redirect(url_for('proveedores'))
+
+@app.route('/proveedores/eliminar/papelera/<string:id>')
+@login_required
+def proveedor_restaurar(id):
+    estado=True
+    modificado= datetime.now()
+    conn = get_db_connection()
+    cur = conn.cursor()
+    #sql="DELETE FROM proveedores WHERE id_proveedores={0}".format(id)
+    sql="UPDATE proveedores SET estado=%s, modificado=%s WHERE id_proveedores=%s"
+    valores=(estado,modificado,id)
+    cur.execute(sql,valores)
+    conn.commit()
+    cur.close()
+    conn.close()
+    flash('Proveedor restaurado')
+    return redirect(url_for('proveedores'))
+
+@app.route("/proveedores/papelera")
+@login_required
+def proveedor_papelera():
     conn = get_db_connection()
     cur= conn.cursor()
-    cur.execute('SELECT prendas.* , proveedores.nombre_proveedor FROM prendas LEFT JOIN proveedores ON prendas.nombre_prov = proveedores.id_proveedor ORDER BY id_prenda')
+    cur.execute('SELECT * FROM proveedores ORDER BY id_proveedores')
+    print("--------------------")
+    print("ESTO ES LA CONSULTA")
+    proveedores = cur.fetchall()
+    for proveedor in proveedores:
+        print("--------------------------")
+        print(proveedor)
+        print("--------------------------")
+    cur.close()
+    conn.close()
+    return render_template('proveedores_papelera.html',proveedores=proveedores)  
+  
+#--------------------------------CRUD prendas ----------------------------------------------------------
+@app.route("/prendas")
+@login_required
+def prendas():
+    sql_count= 'SELECT COUNT(*) FROM prendas WHERE estado=true;'
+   # sql_lim='SELECT prendas.id_prenda, prendas.codigo_producto, proveedores.nombre_proveedor, categoria.categoria, marcas.nombre_marca, prendas.estado, prendas.creado, prendas.modificado, colores.color, tallas.talla, prendas.precio_prenda FROM prendas JOIN proveedores ON prendas.nombre_proveedor = proveedores.id_proveedores JOIN categoria ON prendas.categoria_prenda = categoria.id_categoria JOIN marcas ON prendas.marca_prenda = marcas.id_marca JOIN colores ON prendas.color_prenda = colores.id_color JOIN tallas ON prendas.talla_prenda = tallas.id_tallas ORDER BY id_prenda DESC LIMIT %s OFFSET %s;'
+    sql_lim='SELECT * FROM public.prendas_vista WHERE estado=true ORDER BY id_prenda DESC LIMIT %s OFFSET %s;'
+    paginado = paginador(sql_count,sql_lim,1,1)
+    return render_template('prendas.html',
+                           prendas=paginado[0],
+                           page=paginado[1],
+                           per_page=paginado[2],
+                           total_items=paginado[3],
+                           total_pages=paginado[4])
+
+@app.route("/prendas/nuevo")
+@login_required
+def prenda_nuevo():
+    titulo = "Nueva prenda"
+    return render_template('prenda_nuevo.html', titulo=titulo,categorias=lista_categorias(),tallas=lista_tallas(),colores=lista_colores(),marcas=lista_marcas(),proveedores=lista_proveedores())
+
+@app.route('/prendas/<string:id>')
+@login_required
+def prendas_detalles(id):
+    titulo="Detalles de prendas"
+    conn=get_db_connection()
+    cur=conn.cursor()
+    cur.execute('SELECT * FROM public.prenda WHERE id_prenda={0}'.format(id))
+    prendas=cur.fetchall()
+    conn.commit()
+    cur.close()
+    conn.close()
+    return render_template('prendas_detalles.html',titulo=titulo, prendas=prendas[0])
+
+@app.route('/prendas/detalles/<string:id>')
+@login_required
+def prendas_detallesRes(id):
+    titulo="Detalles de prendas"
+    conn=get_db_connection()
+    cur=conn.cursor()
+    cur.execute('SELECT * FROM public.prenda WHERE id_prenda={0}'.format(id))
+    prendas=cur.fetchall()
+    conn.commit()
+    cur.close()
+    conn.close()
+    return render_template('prendas_detallesRes.html',titulo=titulo, prendas=prendas[0])
+
+@app.route('/prendas/crear', methods=('GET', 'POST'))
+@login_required
+def prendas_crear():
+    if request.method == 'POST':
+        codigo_producto= request.form['codigo_prod']
+        nombre_proveedor= request.form['nombre_prov']
+        categoria_prenda= request.form['categoria_prenda']
+        marca_prenda= request.form['marca_prenda']
+        estado= True
+        creado= datetime.now()
+        modificado= datetime.now()
+        color_prenda= request.form['color_prenda']
+        talla_prenda= request.form['talla_prenda']
+        precio_prenda= request.form['precio_prenda']
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute('INSERT INTO prendas(codigo_producto, nombre_proveedor, categoria_prenda, marca_prenda, estado, creado, modificado, color_prenda, talla_prenda, precio_prenda)'
+	                'VALUES ( %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);',
+                    (codigo_producto, nombre_proveedor, categoria_prenda, marca_prenda, estado, creado, modificado, color_prenda, talla_prenda, precio_prenda))
+        conn.commit()
+        cur.close()
+        conn.close()
+        flash('¡Prenda agregada exitosamente!')
+        return redirect(url_for('prendas'))
+    return redirect(url_for('prenda_nuevo'))
+
+@app.route('/prendas/editar/<string:id>')
+@login_required
+def prendas_editar(id):
+    titulo="Editar Prenda"
+    conn=get_db_connection()
+    cur=conn.cursor()
+    cur.execute('SELECT * FROM prendas WHERE id_prenda={0}'.format(id))
+    prendas=cur.fetchall()
+    conn.commit()
+    cur.close()
+    conn.close()
+    return render_template('prendas_editar.html',titulo=titulo,prendas=prendas[0],colores=lista_colores())
+
+@app.route('/prendas/editar/<string:id>',methods=['POST'])
+@login_required
+def prendas_actualizar(id):
+    if request.method == 'POST':
+        codigo_producto= request.form['codigo_prod']
+        modificado= datetime.now()
+        color_prenda= request.form['color_prenda']
+        precio_prenda= request.form['precio_prenda']
+
+        conn=get_db_connection()
+        cur=conn.cursor()
+        sql="UPDATE public.prendas SET codigo_producto=%s, modificado=%s, color_prenda=%s, precio_prenda=%s WHERE id_prenda=%s;"
+        valores=(codigo_producto,modificado,color_prenda,precio_prenda,id)
+        cur.execute(sql,valores)
+        conn.commit()
+        cur.close()
+        conn.close()
+        flash("Prenda actualizada")
+    return redirect(url_for('prendas'))
+
+@app.route("/prenda/papelera")
+@login_required
+def prenda_papelera():
+    conn = get_db_connection()
+    cur= conn.cursor()
+    cur.execute('SELECT * FROM public.prendas_vista ORDER BY id_prenda;')
     print("--------------------")
     print("ESTO ES LA CONSULTA")
     prendas = cur.fetchall()
@@ -197,49 +605,49 @@ def prendas():
         print("--------------------------")
     cur.close()
     conn.close()
-    return render_template('prendas.html', prendas = prendas)
+    return render_template('prendas_papelera.html',prendas=prendas)
 
-@app.route("/prendas/nuevo")
-def prenda_nuevo():
-    titulo = "Nueva prenda"
-    return render_template('prenda_nuevo.html', titulo=titulo)
+@app.route('/prendas/eliminar/<string:id>')
+@login_required
+def prendas_eliminar(id):
+    estado = False
+    modificado   = datetime.now()
+    conn = get_db_connection()
+    cur = conn.cursor()
+    #sql="DELETE FROM usuarios WHERE id_usuario={0}".format(id)
+    sql="UPDATE prendas SET  estado=%s,modificado=%s WHERE id_prenda=%s"
+    valores=(estado,modificado,id)
+    cur.execute(sql,valores)
+    conn.commit()
+    cur.close()
+    conn.close()
+    flash('Prenda eliminada eliminado')
+    return redirect(url_for('prendas'))
 
-@app.route('/prendas/crear', methods=('GET', 'POST'))
-def prendas_crear():
-    if request.method == 'POST':
-        tipo_prenda= request.form['tipo_prenda']
-        talla_prenda= request.form['talla_prenda']
-        color_prenda= request.form['color_prenda']
-        precio_prenda= request.form['precio_prenda']
-        marca_prenda= request.form['marca_prenda']
-        stock= request.form['stock']
-        codigo_prenda= request.form['codigo_prenda']
-        nombre_prov= request.form['nombre_prov']
-
-
-
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute('INSERT INTO prendas (tipo_prenda,talla_prenda,color_prenda,precio_prenda,marca_prenda,stock,codigo_prenda,nombre_prov)'
-                    'VALUES (%s, %s, %s, %s, %s, %s, %s, %s)',
-                    (tipo_prenda,talla_prenda,color_prenda,precio_prenda,marca_prenda,stock,codigo_prenda,nombre_prov))
-        conn.commit()
-        cur.close()
-        conn.close()
-
-        flash('¡Prenda agregada exitosamente!')
-
-        return redirect(url_for('prendas'))
-
-    return redirect(url_for('prenda_nuevo'))
-
+@app.route('/prendas/restaurar/<string:id>')
+@login_required
+def prendas_restaurar(id):
+    estado = True
+    modificado   = datetime.now()
+    conn = get_db_connection()
+    cur = conn.cursor()
+    #sql="DELETE FROM usuarios WHERE id_usuario={0}".format(id)
+    sql="UPDATE prendas SET  estado=%s,modificado=%s WHERE id_prenda=%s"
+    valores=(estado,modificado,id)
+    cur.execute(sql,valores)
+    conn.commit()
+    cur.close()
+    conn.close()
+    flash('Prenda restaurada')
+    return redirect(url_for('prendas'))
     #---------------------------------CRUD ventas ------------------------------------------------------------
 
 @app.route("/ventas")
+@login_required
 def ventas():
     conn = get_db_connection()
     cur= conn.cursor()
-    cur.execute('SELECT ventas.*, prendas.tipo_prenda, usuarios.nombre_usuario FROM ventas LEFT JOIN prendas ON ventas.prenda = prendas.id_prenda LEFT JOIN usuarios ON ventas.usuario = usuarios.id_usuario ORDER BY ventas.id_venta;')
+    cur.execute('SELECT * FROM ventas')
     print("--------------------")
     print("ESTO ES LA CONSULTA")
     ventas = cur.fetchall()
@@ -252,39 +660,95 @@ def ventas():
     return render_template('ventas.html', ventas=ventas)
 
 @app.route("/ventas/nuevo")
+@login_required
 def venta_nuevo():
     titulo = "Nueva venta"
     return render_template('venta_nuevo.html', titulo=titulo)
 
 @app.route('/ventas/crear', methods=('GET', 'POST'))
+@login_required
 def ventas_crear():
     if request.method == 'POST':
-        prenda= request.form['prenda']
-        total_venta= request.form['total_venta']
-        fecha_venta= request.form['fecha_venta']
+        detven= request.form['detven']
         usuario= request.form['usuario']
+        fecha_creacion = datetime.now()
     
         conn = get_db_connection()
         cur = conn.cursor()
-        cur.execute('INSERT INTO ventas (prenda,total_venta,fecha_venta,usuario)'
-                    'VALUES (%s, %s, %s, %s)',
-                    (prenda,total_venta,fecha_venta,usuario))
+        cur.execute('INSERT INTO ventas (detven,usuario,fecha_creacion)'
+                    'VALUES (%s, %s, %s)',
+                    (detven,usuario,fecha_creacion))
         conn.commit()
         cur.close()
         conn.close()
 
         flash('¡Venta agregada exitosamente!')
-
         return redirect(url_for('ventas'))
-
     return redirect(url_for('venta_nuevo'))
-    #--------------------------- CRUD del sistema de apartado ---------------------------------------------------
+
+@app.route('/ventas/<string:id>')
+@login_required
+def venta_detallado(id):
+    titulo = "Vista ventas"
+    conn = get_db_connection()
+    cur= conn.cursor()
+    cur.execute('SELECT * FROM ventas WHERE id_venta={0}'.format(id))
+    ventas = cur.fetchall()
+    cur.close()
+    conn.close()
+    return render_template('venta_detallado.html',titulo = titulo, ventas = ventas[0])
+
+@app.route('/ventas/editar/<string:id>')
+@login_required
+def venta_editar(id):
+    conn = get_db_connection()
+    cur= conn.cursor()
+    cur.execute('SELECT * FROM ventas WHERE id_venta={0}'.format(id))
+    ventas = cur.fetchall()
+    cur.close()
+    conn.close()
+    return render_template('venta_editar.html',ventas = ventas[0])
+
+@app.route('/ventas/actualizar/<string:id>', methods=['POST'])
+@login_required
+def venta_actualizar(id):
+    if request.method == 'POST':
+        detven= request.form['detven']
+        usuario= request.form['usuario']
+  
+        conn = get_db_connection()
+        cur = conn.cursor()
+        sql = "UPDATE ventas SET detven=%s, usuario=%s WHERE id_venta=%s"
+        valores = (detven,usuario,id)
+        cur.execute (sql,valores)
+        conn.commit()
+        cur.close()
+        conn.close()
+
+        flash('¡Venta editada exitosamente!')
+    return redirect(url_for('ventas'))
+
+@app.route('/ventas/eliminar/<string:id>')
+@login_required
+def ventas_eliminar(id):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    sql="DELETE FROM ventas WHERE id_venta={0}".format(id)
+    cur.execute(sql)
+    conn.commit()
+    cur.close()
+    conn.close()
+    flash('¡Alumno  eliminado correctamente!')
+    return redirect(url_for('ventas'))
+
+    #--------------------------- CRUD de sistema de apartado ---------------------------------------------------
 
 @app.route("/sApartado")
+@login_required
 def sApartado():
     conn = get_db_connection()
     cur= conn.cursor()
-    cur.execute('SELECT apartados.*, prendas.tipo_prenda FROM apartados LEFT JOIN prendas ON apartados.prenda = prendas.id_prenda  ORDER BY apartados.id_apartado;')
+    cur.execute('SELECT * FROM public.apartados ')
     print("--------------------")
     print("ESTO ES LA CONSULTA")
     apartados = cur.fetchall()
@@ -296,36 +760,125 @@ def sApartado():
     conn.close()
     return render_template('sApartado.html', apartados=apartados)
 
+@app.route("/sApartado/papelera")
+@login_required
+def apartado_papelera():
+    conn = get_db_connection()
+    cur= conn.cursor()
+    cur.execute('SELECT * FROM public.apartado  ')
+    print("--------------------")
+    print("ESTO ES LA CONSULTA")
+    apartados = cur.fetchall()
+    for apartado in apartados:
+        print("--------------------------")
+        print(apartado)
+        print("--------------------------")
+    cur.close()
+    conn.close()
+    return render_template('apartado_papelera.html', apartados=apartados)
+
 @app.route("/sApartado/nuevo")
+@login_required
 def apartado_nuevo():
     titulo = "Nuevo apartado"
-    return render_template('apartado_nuevo.html', titulo=titulo)
+    return render_template('apartado_nuevo.html', titulo=titulo, prendas=lista_prendas())
 
 @app.route('/sApartado/crear', methods=('GET', 'POST'))
+@login_required
 def apartados_crear():
     if request.method == 'POST':
-        prenda= request.form['prenda']
-        anticipo= request.form['anticipo']
-        total_restante= request.form['total_restante']
-        precio_final= request.form['precio_final']
-        nombre_cliente= request.form['nombre_cliente']
-        fecha_apartado= request.form['fecha_apartado']
-        fecha_maxima= request.form['fecha_maxima']
-    
-        conn = get_db_connection()
+        anticipo = request.form['anticipo']
+        precio_final = request.form['precio_final']
+        nombre_cliente = request.form['nombre_cliente']
+        detapa= request.form ['detapa']
+        creado = datetime.now()
+        fecha_apartado = request.form['fecha_apartado']
+        fecha_limite = request.form['fecha_limite']
+        cantidad=request.form['']
+        editado= datetime.now()
+        activo = True
+
+        conn = get_db_connection()  
         cur = conn.cursor()
-        cur.execute('INSERT INTO apartados (prenda,anticipo,total_restante,precio_final,nombre_cliente,fecha_apartado,fecha_maxima)'
-                    'VALUES (%s, %s, %s, %s, %s, %s, %s)',
-                    (prenda,anticipo,total_restante,precio_final,nombre_cliente,fecha_apartado,fecha_maxima))
+        sum=('SELECT count(prendas) FROM prendas')
+        cur.execute('INSERT INTO apartados (anticipo, precio_final,detapa, nombre_cliente, creado, fecha_apartado, fecha_limite,editado,  activo)'
+                    'VALUES (%s, %s,%s, %s, %s, %s, %s,%s,%s)',
+                    (anticipo, precio_final,detapa, nombre_cliente, creado, fecha_apartado, fecha_limite,editado, activo))
+        cur.execute('INSERT INTO detalles_apartado (prenda,cantidad)'
+                    'VALUES (%s,%s)',
+                    (detapa,cantidad))
         conn.commit()
         cur.close()
         conn.close()
 
         flash('¡Venta agregada exitosamente!')
+        return redirect(url_for('sApartado'))
+    return redirect(url_for('apartado_nuevo'))
 
+@app.route('/sApartado/<string:id>')
+@login_required
+def apartado_detalle(id):
+    titulo="Detalles de apartado"
+    conn=get_db_connection()
+    cur=conn.cursor()
+    cur.execute('SELECT * FROM apartado WHERE id_apartado={0}'.format(id))
+    apartados=cur.fetchall()
+    conn.commit()
+    cur.close()
+    conn.close()
+    return render_template('apartado_detalle.html',titulo=titulo, apartados=apartados[0])
+
+@app.route('/sApartado/editar/<string:id>')
+@login_required
+def apartado_editar(id):
+    titulo="Editar apartado"
+    conn=get_db_connection()
+    cur=conn.cursor()
+    cur.execute('SELECT * FROM apartados WHERE id_apartado={0}'.format(id))
+    apartados=cur.fetchall()
+    conn.commit()
+    cur.close()
+    conn.close()
+    return render_template('apartado_editar.html',titulo=titulo, apartados=apartados[0], detapas=detapar())
+
+@app.route('/sApartado/editar/<string:id>', methods=['POST'])
+@login_required
+def apartado_actualizar(id):
+  if request.method == 'POST':
+        anticipo = request.form['anticipo']
+        precio_final = request.form['precio_final']
+        nombre_cliente = request.form['nombre_cliente']
+        detapa= request.form ['detapa']
+        fecha_apartado = request.form['fecha_apartado']
+        fecha_limite = request.form['fecha_limite']
+        editado= datetime.now()
+        activo = True
+
+        conn=get_db_connection()
+        cur=conn.cursor()
+        sql="UPDATE apartados SET anticipo=%s,precio_final=%s,nombre_cliente=%s,detapa=%s,fecha_apartado=%s,fecha_limite=%s,editado=%s, activo=%s WHERE id_apartado=%s"
+        valores=(anticipo, precio_final, nombre_cliente,detapa, fecha_apartado, fecha_limite,editado, activo,id)
+        cur.execute(sql,valores)
+        conn.commit()
+        cur.close()
+        conn.close()
+        flash("apartado editado correctamente")
         return redirect(url_for('sApartado'))
 
-    return redirect(url_for('apartado_nuevo'))
+@app.route('/sApartado/eliminar/<string:id>')
+@login_required
+def apartado_eliminar(id):
+    activo = False
+    conn = get_db_connection()
+    cur = conn.cursor()
+    sql="UPDATE apartados SET activo=%s WHERE id_apartado=%s"
+    valores=(activo,id)
+    cur.execute(sql,valores)
+    conn.commit()
+    cur.close()
+    conn.close()
+    flash('¡Apartado eliminado correctamente!')
+    return redirect(url_for('sApartado'))
     
     #--------------------------------------------------------------------------------------- 
  
@@ -340,7 +893,4 @@ if __name__ == '__main__':
     app.register_error_handler(404, pagina_no_encontrada)
     app.register_error_handler(401, acceso_no_autorizado)
     app.run(debug=True, port=5000) 
-
-
-# .venv\Scripts\activate
-# python app\app.py run
+#todos los derechos reservados

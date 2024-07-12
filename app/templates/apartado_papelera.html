@@ -1,0 +1,123 @@
+{% extends './layout.html' %}
+{% block title %} Ay hola {% endblock %}
+{% block body %}
+
+<h2>Sistema de Apartado</h2>
+
+
+
+<table class="table table-hover">
+        <thead>
+                <tr>
+                        <th class="text-center">Ver </th>
+                        <th class="text-center">Anticipo </th>
+                        <th class="text-center">Precio final</th>
+                        <th class="text-center">Nombre del cliente </th>
+                        <th class="text-center">Fecha de apartado </th>
+                        <th class="text-center">Fecha limite </th>
+                        <th class="text-center">situacion </th>
+                        <th class="text-center">creado </th>
+                        <th class="text-center">editado </th>
+                        <!-- ----------------------------ACCIONES--------------------- -->
+                        
+                        <th class="text-center">restaurar</th>
+                </tr>
+        </thead>
+        <tbody>
+                {% for apartado in apartados %}
+                {% if apartado.9==false %}
+
+                <tr>
+                        <td class="text-center">
+                                <div class="btn btn-outline-danger d-inline-flex align-items-center">
+
+                                        <a href="{{ url_for('apartado_detalle', id = apartado[0]) }}"><img
+                                                        src="{{ url_for('static',filename = 'img/eye.svg') }}"
+                                                        alt="borrar" height="18"></a>
+                                </div>
+                        </td>
+
+                        
+
+                        <td class="text-center">
+                                {{apartado[1]}}
+                        </td>
+                        <td class="text-center">
+                                {{apartado[2]}}
+                        </td>
+
+                        <td class="text-center">
+                                {{apartado[3]}}
+                        </td>
+                        <td class="text-center">
+                                {{apartado[6]}}
+                        </td>
+                        <td class="text-center">
+                                {{apartado[7]}}
+                        </td>
+                        {% if apartado.8==true %}
+                        <td style="color: green">Activo </td>
+                            {% else %}
+                        <td style="color: red">inactivo</td>
+                        {% endif %}
+                      
+                        <td class="text-center">
+                                {{apartado[5]}}
+                        </td>
+                        <td class="text-center">
+                                {{apartado[8]}}
+                        </td>
+                       
+
+                       
+
+                   
+                     
+                        <td class="text-center">
+                                <button type="button" class="btn btn-outline-danger d-inline-flex align-items-center"
+                                        data-bs-toggle="modal" data-bs-target="#staticBackdrop-{{apartado.0}}"><img
+                                                src="{{ url_for('static',filename = 'img/delete.png') }}" alt="borrar"
+                                                height="18">
+                                </button>
+                        </td>
+                        
+                </tr>
+                {% else %}      
+                {% endif %}
+
+                {% endfor %}
+        </tbody>
+        <a class="btn btn-outline-danger d-inline-flex align-items-center" href="{{url_for('sApartado')}}">
+                regresar
+            </a>
+</table>
+
+{% if apartados %}
+{% for apartado in apartados %}
+<div class="modal fade" id="staticBackdrop-{{apartado.0}}" data-bs-backdrop="static" data-bs-keyboard="false"
+        tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div class="modal-dialog">
+                <div class="modal-content">
+                        <div class="modal-header">
+                                <h5 class="modal-title" id="staticBackdropLabel">Confirmar acción</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                                ¿Deseas eliminar a <strong> nombre: {{ apartado[4] }} anticipo: {{ apartado[2] }} precio final: {{ apartado[3] }}</strong>?
+                        </div>
+                        <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary"
+                                        data-bs-dismiss="modal">Cancelar</button>
+                                <a class="btn btn-danger" href="{{ url_for('apartado_eliminar', id = apartado[0]) }}"
+                                        class="btn-delete"><i class="fas fa-trash-alt"></i> Eliminar</a>
+                        </div>
+                </div>
+        </div>
+</div>
+{% endfor %}
+{% else %}
+{% endif %}
+
+
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends './layout.html' %}
+{% block title %} Ay hola {% endblock %}
+{% block body %}
+
+<h2>Papelera de Prendas</h2>
+
+<table class="table table-hover">
+        <thead>
+                <tr>
+                        <th class="text-center">Ver </th>
+                        <th class="text-center">Categoria </th>
+                        <th class="text-center">Talla </th>
+                        <th class="text-center">Color </th>
+                        <th class="text-center">Precio </th>
+                        <th class="text-center">Marca </th>
+        </thead>
+        <tbody>
+                {% for prenda in prendas %}
+                {% if prenda.5==false %}
+
+                <tr>
+                        <td class="text-center">
+                                <div class="btn btn-outline-danger d-inline-flex align-items-center">
+                                        <a href="{{ url_for('prendas_detallesRes', id = prenda[0]) }}"><img
+                                                        src="{{ url_for('static',filename = 'img/eye.svg') }}"
+                                                        alt="borrar" height="18"></a>
+                                </div>
+                        </td>
+                        <!-- categoria -->
+                        <td class="text-center">
+                                {{prenda[3]}}
+
+                        </td>
+                        <!-- talla -->
+                        <td class="text-center">
+                                {{prenda[9]}}
+                        </td>
+                        <!-- color -->
+                        <td class="text-center">
+                                {{prenda[8]}}
+                        </td>
+                        <!-- precio -->
+                        <td class="text-center">
+                                {{prenda[10]}}
+                        </td>
+                        <!-- marca -->
+                        <td class="text-center">
+                                {{prenda[3]}}
+                        </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+        </tbody>
+</table>
+<div class="btn btn-outline-danger d-inline-flex align-items-center">
+
+        <a href="{{ url_for('prendas')}}"><img
+                        src="{{ url_for('static',filename = 'img/redo.svg') }}"
+                        alt="ver" height="18"></a>
+</div>
+{% endblock %}

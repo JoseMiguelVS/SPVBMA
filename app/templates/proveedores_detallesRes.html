@@ -1,0 +1,39 @@
+{% extends './layout.html' %}
+{% block title %} Ay hola {% endblock %}
+{% block body %}
+<p class="fc">Última edición: {{proveedores.4}}</p>
+<p class="fc">Fecha de creación: {{proveedores.5}}</p>
+<table class="table-bordered table-responsive">
+
+    <thead>
+        <tr>
+            <th class="text-center">Nombre </th>
+            <th class="text-center">Celular </th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+
+            <td>
+                {{proveedores[1]}}
+            </td>
+            <td>
+                {{proveedores[2]}}
+            </td>
+
+        </tr>
+    </tbody>
+</table>
+<br>
+<div class="btn btn-outline-danger d-inline-flex align-items-center">
+    <!-- proveedores_actualizar.html> -->
+    <a class="btn-act" href="{{ url_for('proveedor_restaurar', id = proveedores[0]) }}"><img
+            src="{{ url_for('static',filename = 'img/restart.svg') }}" alt="Restaurar" height="18">Restaurar</a>
+</div>
+<br>
+<br>
+<div class="btn btn-outline-danger d-inline-flex align-items-center">
+    <a class="btn-act" href="{{url_for('proveedores')}}"><img src="{{ url_for('static',filename = 'img/undo.svg') }}"
+            alt="cancelar" height="18">Volver</a>
+</div>
+{% endblock %}

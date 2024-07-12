@@ -1,0 +1,69 @@
+{% extends './layout.html' %}
+{% block title %} Ay hola {% endblock %}
+{% block body %}
+
+<table class="table">
+
+    <thead>
+        <tr>
+            
+            <th class="text-center">Anticipo </th>
+            <th class="text-center">precio final </th>
+            <th class="text-center">Nombre del cliente </th>
+            <th class="text-center">Prenda </th>
+            <th class="text-center">Fecha de apartado </th>
+            <th class="text-center">Tiempo limite </th>
+            <th class="text-text">Fecha de creación:</th>
+            <th class="text-text">Fecha de edicion:</th>
+          
+       
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+           
+
+            <td>
+                {{apartados[1]}}
+            </td>
+            <td>
+                {{apartados[2]}}
+            </td>
+            <td>
+                {{apartados[3]}}
+            </td>
+            <td>
+                {{apartados[4]}}
+            </td>
+            <td>
+                {{apartados[6]}}
+            </td>
+            <td>
+                {{apartados[7]}}
+            </td>
+            <td>
+                {{apartados[5]}}
+            </td>
+            <td>
+                {{apartados[8]}}
+            </td>
+          
+          
+
+        </tr>
+    </tbody>
+</table>
+
+<div class="btn btn-outline-danger d-inline-flex align-items-center">
+    <!-- apartado_actualizar.html> -->
+    <a class="btn-act" href="{{ url_for('apartado_editar', id = apartados[0]) }}"><img
+            src="{{ url_for('static',filename = 'img/edit.png') }}" alt="Editar" height="18">Editar</a>
+</div>
+<br>
+<br>
+<div class="btn btn-outline-danger d-inline-flex align-items-center">
+
+    <a class="btn-act" href="{{url_for('sApartado')}}"><img src="{{ url_for('static',filename = 'img/undo.svg') }}" alt="cancelar"
+            height="18">Cancelar</a>
+</div>
+{% endblock %}

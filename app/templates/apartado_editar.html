@@ -1,0 +1,67 @@
+{% extends './layout.html' %}
+
+{% block title %} {{titulo}} {% endblock %}
+
+{% block body %}
+
+
+
+
+  <form method="POST" action="{{ url_for('apartado_actualizar', id=apartados[0]) }}" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+   
+    
+    
+    <div class="form-group">
+      <label for="anticipo">Anticipo</label>
+      <input type="text" class="form-control" id="anticipo" placeholder="ej.200" name="anticipo" value="{{apartados[1]}}">
+    </div>
+    
+
+        
+     <div class="form-group">
+          <label for="precio_final">Precio final</label>
+          <input type="text" class="form-control" id="precio_final" placeholder="ej.500" name="precio_final" value="{{apartados[2]}}">
+        </div>
+
+     <div class="form-group">
+          <label for="nombre_cliente">Nombre del cliente</label>
+          <input type="text" class="form-control" id="nombre_cliente" placeholder="ej.Juan" name="nombre_cliente" value="{{apartados[3]}}">
+        </div>
+
+     <div class="form-group">
+          <label for="fecha_apartado">Fecha de aparatado</label>
+          <input type="text" class="form-control" id="fecha_apartado" placeholder="AAAA-MM-DD" name="fecha_apartado" value="{{apartados[6]}}">
+        </div>
+
+     <div class="form-group">
+          <label for="fecha_limite">Fecha limite</label>
+          <input type="text" class="form-control" id="fecha_limite" placeholder="AAAA-MM-DD" name="fecha_limite" value="{{apartados[7]}}">
+        </div>
+
+        <label for="detapa">prenda</label>
+        <select class="form-select" aria-label="Default select example" name="detapa">
+          <option selected>hola</option>
+          {% if detapas %}
+            {% for apa in detapas %}
+              <option value="{{ apa[0] }}">{{ apa[1] }}</option>
+            {% endfor %}
+          {% else %}
+            <option>no hay nada</option>
+          {% endif %}
+        </select>
+      
+
+        
+    
+    <button class="btn btn-primary d-inline-flex align-items-center" type="submit">
+        Guardar
+    </button>
+    <a class="btn btn-outline-danger d-inline-flex align-items-center" href="{{url_for('sApartado')}}">
+        Cancelar
+    </a>
+</form>
+
+
+
+{% endblock %}

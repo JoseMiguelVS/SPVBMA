@@ -1,0 +1,50 @@
+{% extends './layout.html' %}
+{% block title %} Ay hola {% endblock %}
+{% block body %}
+
+<h2>Usuarios eliminados</h2>
+<br>
+<table class="table-bordered table-responsive">
+        <thead>
+                <tr>
+                        <th class="text-center">Ver</th>
+                        <th class="text-center">Nombre </th>
+                        <th class="text-center">Apellido Paterno </th>
+                        <th class="text-center">Apellido Materno </th>
+                </tr>
+        </thead>
+        <tbody>
+                {% for usuario in usuarios %}
+                {% if usuario.9==false %}
+                <tr>
+                        <td class="text-center">
+                                <div class="btn btn-outline-danger d-inline-flex align-items-center">
+
+                                        <a href="{{ url_for('usuarios_detallesRes', id = usuario[0]) }}"><img
+                                                        src="{{ url_for('static',filename = 'img/eye.svg') }}"
+                                                        alt="ver" height="18"></a>
+                                </div>
+                        </td>
+
+                        <td class="text-center">
+                                {{usuario[1]}}
+                        </td>
+                        <td class="text-center">
+                                {{usuario[2]}}
+                        </td>
+                        <td class="text-center">
+                                {{usuario[3]}}
+                        </td>
+                </tr>
+                {% endif %}     
+                {% endfor %}
+        </tbody>
+</table>
+<br>
+<div class="btn btn-outline-danger d-inline-flex align-items-center">
+
+        <a href="{{ url_for('usuarios')}}"><img
+                        src="{{ url_for('static',filename = 'img/redo.svg') }}"
+                        alt="ver" height="18"></a>
+</div>
+{% endblock %}
