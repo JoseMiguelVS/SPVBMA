@@ -36,7 +36,10 @@ app.secret_key='chistosa'
 def index():
     return render_template('index.html')
 
-@app.route 
+@app.route("/dashboard")
+def dashboard():
+    return render_template("dashboard.html")
+
 #------------------------------------------consulta de prendas-------------------------------------------
 def lista_prendas():
     conn=get_db_connection()
@@ -142,7 +145,7 @@ def loguear():
     if request.method == 'POST':
         nombre_usuario=request.form['nombre_usuario']
         contrasenia=request.form['contrasenia']
-        user=User(0,nombre_usuario,contrasenia,None,None,None,None,None,None,None,None,None)
+        user=User(0,nombre_usuario,contrasenia,None)
         loged_user=ModuleUser.login(get_db_connection(),user)
 
         if loged_user!= None:

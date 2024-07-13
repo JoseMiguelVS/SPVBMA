@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,30 +12,25 @@
 
 {% block body %}
 
-<body >
-    <div class="container">
+<body class="body1">
+<div class="container1">
     <h2>Iniciar Sesión</h2>
-    <form action="{{url_for('loguear')}}" method="POST">
-        <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
-
+    <form action="{{ url_for('loguear') }}" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="form-group">
             <label for="nombre_usuario">Nombre usuario</label>
             <input type="text" class="form-control" id="nombre_usuario" placeholder="Nombre" name="nombre_usuario">
         </div>
-        <br>
         <div class="form-group">
             <label for="contrasenia">Contraseña</label>
-            <input type="text" class="form-control" id="contrasenia" placeholder="Contraseña" name="contrasenia">
+            <input type="password" class="form-control" id="contrasenia" placeholder="Contraseña" name="contrasenia">
         </div>
-
-        <br>
         <button class="btn btn-outline-danger align-items-center" type="submit">
             Entrar
         </button>
-    </div>
+    </form>
+</div>
 </body>
+{% endblock %}
 
 </html>
-
-
-{% endblock %}
