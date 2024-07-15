@@ -3,7 +3,6 @@
 {% block body %}
 
 <h2>Usuarios</h2>
-
 <!-- -----------------Alertas de registro, editado, borrado y restaurado---------------------------- -->
 {% with messages = get_flashed_messages() %}
 {% if messages %}
@@ -16,26 +15,35 @@
 {% endfor %}
 {% endif %}
 {% endwith %}
-
+<!-- -------------------------NUEVO USUARIO-------------------------------------- -->
+{% if current_user.rol == 1 %}
 <br>
 <a href="{{url_for('usuario_nuevo')}}" class="btn btn-outline-danger d-inline-flex align-items-center">Nuevo</a>
 <br><br>
-
+{% endif %}
+<!-- ----------------------------------------------TABLA--------------------------------------------------- -->
 <table class="table-bordered table-responsive">
         <thead>
+<!-- -------------------------------TITULOS------------------------------------- -->
                 <tr>
+                        {% if current_user.rol == 1 %}
                         <th class="text-center">Ver</th>
+                        {% endif %}
                         <th class="text-center">Nombre </th>
                         <th class="text-center">Apellido Paterno </th>
                         <th class="text-center">Apellido Materno </th>
+                        {% if current_user.rol == 1 %}
                         <th class="text-center">Editar</th>
                         <th class="text-center">Borrar</th>
+                        {% endif %}
                 </tr>
         </thead>
+<!-- -------------------------------CONTENIDO----------------------------------- -->
         <tbody>
                 {% for usuario in usuarios %}
                 {% if usuario.9 == True %}
                 <tr>
+                        {% if current_user.rol == 1 %}
                         <td class="text-center">
                                 <div class="btn btn-outline-danger d-inline-flex align-items-center">
 
@@ -44,7 +52,7 @@
                                                         alt="borrar" height="18"></a>
                                 </div>
                         </td>
-
+                        {% endif %}
                         <td class="text-center">
                                 {{usuario[1]}}
                         </td>
@@ -55,6 +63,7 @@
                                 {{usuario[3]}}
                         </td>
 
+                        {% if current_user.rol == 1 %}
                         <td class="text-center">
                                 <div class="btn btn-outline-danger d-inline-flex align-items-center"><a
                                                 href="{{ url_for('usuarios_editar', id = usuario[0]) }}"><img
@@ -68,18 +77,22 @@
                                                 height="18">
                                 </button>
                         </td>
+                        {% endif %}
                 </tr>
                 {% endif %}
                 {% endfor %}
         </tbody>
 </table>
+<!-- -----------------------------PAPELERA----------------------------------- -->
+{% if current_user.rol == 1 %}
 <div>
-<br>
+        <br>
         <a href="{{ url_for('usuarios_papelera') }}"
                 class="btn btn-outline-danger d-inline-flex align-items-center">Papelera<img
                         src="{{ url_for('static',filename = 'img/trash.svg') }}" alt="papelera" height="18"></a>
 </div>
-
+{% endif %}
+<!-- --------------------------------------------------MODAL--------------------------------------------------- -->
 {% if usuarios %}
 {% for usuario in usuarios %}
 <div class="modal fade" id="staticBackdrop-{{usuario.0}}" data-bs-backdrop="static" data-bs-keyboard="false"

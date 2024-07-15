@@ -17,25 +17,32 @@
 {% endif %}
 {% endwith %}
 
+{% if current_user.rol == 1 %}
+
 <br>
-<a href="{{url_for('proveedores_nuevo')}}" class="btn btn-outline-danger d-inline-flex align-items-center"><i></i>
-        Nuevo</a>
+<a href="{{url_for('proveedores_nuevo')}}" class="btn btn-outline-danger d-inline-flex align-items-center">Nuevo</a>
 <br><br>
+{% endif %}
 
 <table class="table-bordered table-responsive">
         <thead>
                 <tr>
+                        {% if current_user.rol == 1 %}
                         <th class="text-center">Ver</th>
+                        {% endif %}
                         <th class="text-center">Nombre</th>
                         <th class="text-center">Celular </th>
+                        {% if current_user.rol == 1 %}
                         <th class="text-center">Editar</th>
                         <th class="text-center">Eliminar </th>
+                        {% endif %}
                 </tr>
         </thead>
         <tbody>
                 {% for proveedor in proveedores %}
                 {% if proveedor.3==True %}
                 <tr>
+                        {% if current_user.rol == 1 %}
                         <td class="text-center">
                                 <div class="btn btn-outline-danger d-inline-flex align-items-center">
 
@@ -44,14 +51,14 @@
                                                         height="18"></a>
                                 </div>
                         </td>
-
+                        {% endif %}
                         <td class="text-center">
                                 {{proveedor[1]}}
                         </td>
                         <td class="text-center">
                                 {{proveedor[2]}}
                         </td>
-
+                        {% if current_user.rol == 1 %}
                         <td class="text-center">
                                 <div class="btn btn-outline-danger d-inline-flex align-items-center">
                                         <a href="{{ url_for('proveedores_editar', id = proveedor[0]) }}"><img
@@ -67,7 +74,7 @@
                                                 height="18">
                                 </button>
                         </td>
-
+                        {% endif %}
                 </tr>
                 {% endif %}
                 {% endfor %}
@@ -75,12 +82,15 @@
         </tbody>
 </table>
 <br>
+{% if current_user.rol == 1 %}
+
 <div>
         <a href="{{ url_for('proveedor_papelera') }}"
                 class="btn btn-outline-danger d-inline-flex aligng-items-center">Papelera<img
                         src="{{ url_for('static',filename = 'img/trash.svg') }}" alt="papelera" height="18"></a>
 
 </div>
+{% endif %}
 
 {% if proveedores %}
 {% for proveedor in proveedores %}

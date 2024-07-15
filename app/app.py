@@ -145,7 +145,7 @@ def loguear():
     if request.method == 'POST':
         nombre_usuario=request.form['nombre_usuario']
         contrasenia=request.form['contrasenia']
-        user=User(0,nombre_usuario,contrasenia,None)
+        user=User(0,nombre_usuario,contrasenia,None,None)
         loged_user=ModuleUser.login(get_db_connection(),user)
 
         if loged_user!= None:
@@ -160,6 +160,13 @@ def loguear():
             return redirect(url_for('login'))
     else:
         return redirect(url_for('login'))
+    
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('index'))
+
 #------------------------------------------------- CRUD usuarios --------------------------------------------------------
 @app.route("/usuarios")
 @login_required 
@@ -211,6 +218,7 @@ def usuarios_crear():
         celular_usuario= request.form['celular_usuario']
         domicilio_usuario= request.form['domicilio_usuario']
         contrasenia= request.form['contrasenia']
+        Pass= generate_password_hash(contrasenia)
         correo_electronico= request.form['correo_electronico']
         rol= request.form['id_rol']
         estado = True
@@ -221,7 +229,7 @@ def usuarios_crear():
         cur = conn.cursor()
         cur.execute('INSERT INTO usuarios(nombre_usuario, apellido_paterno, apellido_materno, celular_usuario, domicilo_usuario, contrasenia, correo_electronico, rol, estado, creado, editado)'
                     'VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);',
-                    (nombre_usuario,apellido_paterno,apellido_materno,celular_usuario,domicilio_usuario,contrasenia,correo_electronico,rol,estado,creado,editado))
+                    (nombre_usuario,apellido_paterno,apellido_materno,celular_usuario,domicilio_usuario,Pass,correo_electronico,rol,estado,creado,editado))
         conn.commit()
         cur.close()
         conn.close()
@@ -276,15 +284,18 @@ def usuarios_restaurar(id):
 @app.route('/usuarios/editar/<string:id>')
 @login_required
 def usuarios_editar(id):
-    titulo="Editar Usuario"
-    conn=get_db_connection()
-    cur=conn.cursor()
-    cur.execute('SELECT * FROM usuarios WHERE id_usuario={0}'.format(id))
-    usuarios=cur.fetchall()
-    conn.commit()
-    cur.close()
-    conn.close()
-    return render_template('usuarios_editar.html',titulo=titulo, usuarios=usuarios[0],roles=lista_rol())
+    if current_user.rol == 1:
+        titulo="Editar Usuario"
+        conn=get_db_connection()
+        cur=conn.cursor()
+        cur.execute('SELECT * FROM usuarios WHERE id_usuario={0}'.format(id))
+        usuarios=cur.fetchall()
+        conn.commit()
+        cur.close()
+        conn.close()
+        return render_template('usuarios_editar.html',titulo=titulo, usuarios=usuarios[0],roles=lista_rol())
+    else:
+        return redirect(url_for('usuarios'))
 
 @app.route('/usuarios/editar/<string:id>', methods=['POST'])
 @login_required
@@ -315,19 +326,22 @@ def usuarios_actualizar(id):
 @app.route('/usuarios/eliminar/<string:id>')
 @login_required
 def usuarios_eliminar(id):
-    estado=False
-    editado = datetime.now()
-    conn = get_db_connection()
-    cur = conn.cursor()
-    #sql="DELETE FROM usuarios WHERE id_usuario={0}".format(id)
-    sql="UPDATE usuarios SET  estado=%s, editado=%s WHERE id_usuario=%s"
-    valores=(estado,editado,id)
-    cur.execute(sql,valores)
-    conn.commit()
-    cur.close()
-    conn.close()
-    flash('Usuario eliminado')
-    return redirect(url_for('usuarios'))
+    if current_user.rol == 1:
+        estado=False
+        editado = datetime.now()
+        conn = get_db_connection()
+        cur = conn.cursor()
+        #sql="DELETE FROM usuarios WHERE id_usuario={0}".format(id)
+        sql="UPDATE usuarios SET  estado=%s, editado=%s WHERE id_usuario=%s"
+        valores=(estado,editado,id)
+        cur.execute(sql,valores)
+        conn.commit()
+        cur.close()
+        conn.close()
+        flash('Usuario eliminado')
+        return redirect(url_for('usuarios'))
+    else:
+        return redirect(url_for('usuarios'))
 
 #---------------------------------------- CRUD proveedores ------------------------------------------------------------
 @app.route("/proveedores")
@@ -404,15 +418,18 @@ def proveedores_detallesRes(id):
 @app.route('/proveedores/editar/<string:id>')
 @login_required
 def proveedores_editar(id):
-    titulo="Editar Proveedor"
-    conn=get_db_connection()
-    cur=conn.cursor()
-    cur.execute('SELECT * FROM proveedores WHERE id_proveedores={0}'.format(id))
-    proveedores=cur.fetchall()
-    conn.commit()
-    cur.close()
-    conn.close()
-    return render_template('proveedores_editar.html',titulo=titulo, proveedor=proveedores[0])
+    if current_user.rol == 1:
+        titulo="Editar Proveedor"
+        conn=get_db_connection()
+        cur=conn.cursor()
+        cur.execute('SELECT * FROM proveedores WHERE id_proveedores={0}'.format(id))
+        proveedores=cur.fetchall()
+        conn.commit()
+        cur.close()
+        conn.close()
+        return render_template('proveedores_editar.html',titulo=titulo, proveedor=proveedores[0])
+    else:
+        return redirect(url_for('proveedores'))
 
 @app.route('/proveedores/editar/<string:id>', methods=['POST'])
 @login_required
@@ -438,19 +455,22 @@ def proveedores_actualizar(id):
 @app.route('/proveedores/eliminar/<string:id>')
 @login_required
 def proveedor_eliminar(id):
-    estado=False
-    modificado= datetime.now()
-    conn = get_db_connection()
-    cur = conn.cursor()
-    #sql="DELETE FROM proveedores WHERE id_proveedores={0}".format(id)
-    sql="UPDATE proveedores SET estado=%s, modificado=%s WHERE id_proveedores=%s"
-    valores=(estado,modificado,id)
-    cur.execute(sql,valores)
-    conn.commit()
-    cur.close()
-    conn.close()
-    flash('Proveedor eliminado')
-    return redirect(url_for('proveedores'))
+    if current_user.rol == 1:
+        estado=False
+        modificado= datetime.now()
+        conn = get_db_connection()
+        cur = conn.cursor()
+        #sql="DELETE FROM proveedores WHERE id_proveedores={0}".format(id)
+        sql="UPDATE proveedores SET estado=%s, modificado=%s WHERE id_proveedores=%s"
+        valores=(estado,modificado,id)
+        cur.execute(sql,valores)
+        conn.commit()
+        cur.close()
+        conn.close()
+        flash('Proveedor eliminado')
+        return redirect(url_for('proveedores'))
+    else:
+        return redirect(url_for('proveedores'))
 
 @app.route('/proveedores/eliminar/papelera/<string:id>')
 @login_required
@@ -563,15 +583,18 @@ def prendas_crear():
 @app.route('/prendas/editar/<string:id>')
 @login_required
 def prendas_editar(id):
-    titulo="Editar Prenda"
-    conn=get_db_connection()
-    cur=conn.cursor()
-    cur.execute('SELECT * FROM prendas WHERE id_prenda={0}'.format(id))
-    prendas=cur.fetchall()
-    conn.commit()
-    cur.close()
-    conn.close()
-    return render_template('prendas_editar.html',titulo=titulo,prendas=prendas[0],colores=lista_colores())
+    if current_user.rol == 1:
+        titulo="Editar Prenda"
+        conn=get_db_connection()
+        cur=conn.cursor()
+        cur.execute('SELECT * FROM prendas WHERE id_prenda={0}'.format(id))
+        prendas=cur.fetchall()
+        conn.commit()
+        cur.close()
+        conn.close()
+        return render_template('prendas_editar.html',titulo=titulo,prendas=prendas[0],colores=lista_colores())
+    else:
+        return redirect(url_for('prendas'))
 
 @app.route('/prendas/editar/<string:id>',methods=['POST'])
 @login_required
@@ -613,19 +636,22 @@ def prenda_papelera():
 @app.route('/prendas/eliminar/<string:id>')
 @login_required
 def prendas_eliminar(id):
-    estado = False
-    modificado   = datetime.now()
-    conn = get_db_connection()
-    cur = conn.cursor()
-    #sql="DELETE FROM usuarios WHERE id_usuario={0}".format(id)
-    sql="UPDATE prendas SET  estado=%s,modificado=%s WHERE id_prenda=%s"
-    valores=(estado,modificado,id)
-    cur.execute(sql,valores)
-    conn.commit()
-    cur.close()
-    conn.close()
-    flash('Prenda eliminada eliminado')
-    return redirect(url_for('prendas'))
+    if current_user.rol == 1:
+        estado = False
+        modificado   = datetime.now()
+        conn = get_db_connection()
+        cur = conn.cursor()
+        #sql="DELETE FROM usuarios WHERE id_usuario={0}".format(id)
+        sql="UPDATE prendas SET  estado=%s,modificado=%s WHERE id_prenda=%s"
+        valores=(estado,modificado,id)
+        cur.execute(sql,valores)
+        conn.commit()
+        cur.close()
+        conn.close()
+        flash('Prenda eliminada eliminado')
+        return redirect(url_for('prendas'))
+    else:
+        return redirect(url_for('prendas'))
 
 @app.route('/prendas/restaurar/<string:id>')
 @login_required
@@ -643,7 +669,8 @@ def prendas_restaurar(id):
     conn.close()
     flash('Prenda restaurada')
     return redirect(url_for('prendas'))
-    #---------------------------------CRUD ventas ------------------------------------------------------------
+
+#---------------------------------CRUD ventas ------------------------------------------------------------
 
 @app.route("/ventas")
 @login_required
@@ -744,7 +771,7 @@ def ventas_eliminar(id):
     flash('¡Alumno  eliminado correctamente!')
     return redirect(url_for('ventas'))
 
-    #--------------------------- CRUD de sistema de apartado ---------------------------------------------------
+#--------------------------- CRUD de sistema de apartado ---------------------------------------------------
 
 @app.route("/sApartado")
 @login_required
@@ -889,7 +916,7 @@ def pagina_no_encontrada(error):
     return render_template('404.html')
 
 def acceso_no_autorizado(error):
-    return redirect(url_for('sesion'))
+    return redirect(url_for('login'))
 
 if __name__ == '__main__':
     csrf.init_app(app)

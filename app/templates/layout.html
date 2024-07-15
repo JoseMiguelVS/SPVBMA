@@ -20,11 +20,14 @@
             <button class="menu-toggle" aria-label="Toggle menu"><img
                     src="{{ url_for('static',filename = 'img/menu.svg') }}" alt=""></button>
             <ul class="nav-menu">
+                {% if current_user.rol == 1 %}
                 <li><a href="{{url_for('usuarios')}}">USUARIOS</a></li>
                 <li><a href="{{url_for('prendas')}}">PRENDAS</a></li>
                 <li><a href="{{url_for('proveedores')}}">PROVEEDORES</a></li>
+                {% endif %}
                 <li><a href="{{url_for('ventas')}}">VENTAS</a></li>
                 <li><a href="{{url_for('sApartado')}}">APARTADOS</a></li>
+                <li><a href="{{url_for('logout')}}">SING OUT</a></li>
             </ul>
         </nav>
     </div>

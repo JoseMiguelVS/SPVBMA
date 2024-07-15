@@ -6,6 +6,9 @@
     margin: 0;
     background-color: #b02b2c; /* Fondo rojo */
 }
+body{
+    background-color: #b02b2c; /* Fondo rojo */
+}
 .container1 {
     max-width: 400px;
     padding: 50px;
