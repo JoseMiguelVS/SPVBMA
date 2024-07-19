@@ -1,19 +1,24 @@
 import os
+import uuid
+import re
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from datetime import datetime
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 from werkzeug.utils import secure_filename
 from flask import Flask, render_template, url_for, redirect, request, flash, Blueprint, jsonify
 from flask_wtf.csrf import CSRFProtect
+
 from werkzeug.security import generate_password_hash
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
+
 from Models.ModelUser import ModuleUser
 from Models.entities.user import User
 
 app = Flask(__name__)
 csrf=CSRFProtect() 
-    #----------------------conexion---------------------------------------------
 
+#-------------------------------conexion---------------------------------------------
 def get_db_connection():
     try:
         conn = psycopg2.connect(host='localhost',
@@ -24,21 +29,83 @@ def get_db_connection():
     except psycopg2.Error as error:
         print(f"error de conexion: {error}")
         return None
-#---------------------------------LOGIN------------------------------------------
+
+#------------------------- Tiempo -------------------------
+@app.template_filter('formatear_tiempo')
+def formatear_tiempo(fecha_pasada):
+    ahora = datetime.now()
+    diferencia = relativedelta(ahora, fecha_pasada)
+
+    if diferencia.years > 0:
+        return f"Hace {diferencia.years} años"
+    elif diferencia.years == 1:
+        return f"Hace {diferencia.years} año"
+    elif diferencia.months > 0:
+        return f"Hace {diferencia.months} meses"
+    elif diferencia.months == 1:
+        return f"Hace {diferencia.months} mes"
+    elif diferencia.days > 0:
+        return f"Hace {diferencia.days} días"
+    elif diferencia.days == 1:
+        return f"Hace {diferencia.days} día"
+    elif diferencia.hours > 0:
+        return f"Hace {diferencia.hours} horas"
+    elif diferencia.hours == 1:
+        return f"Hace {diferencia.hours} hora"
+    elif diferencia.minutes > 0:
+        return f"Hace {diferencia.minutes} minutos"
+    elif diferencia.minutes == 1:
+        return f"Hace {diferencia.minutes} minuto"
+    else:
+        return "Hace unos segundos"
+    
+#--------------------------------Login------------------------------------------
 Login_manager_app=LoginManager(app)
 @Login_manager_app.user_loader
 def load_user(idusuarios):
     return ModuleUser.get_by_id(get_db_connection(),idusuarios)
 
+#--------------------------------IMAGEN------------------------------------------
+def my_random_string(string_length=10):
+    """Regresa una cadena aleatoria de la longitud de string_length."""
+    random = str(uuid.uuid4()) # Conviente el formato UUID a una cadena de Python.
+    random = random.upper() # Hace todos los caracteres mayusculas.
+    random = random.replace("-","") # remueve el separador UUID '-'.
+    return random[0:string_length] # regresa la cadena aleatoria.
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+ruta_usuarios=app.config['UPLOAD_FOLDER']='./app/static/img/uploads/'
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+#-------------------------------- SECRET KEY ---------------------------
 app.secret_key='chistosa'
 
+#----------------------------------RUTAS---------------------------------------
 @app.route("/")
+def login():
+    return render_template('sesion.html')
+
+@app.route("/index")
+@login_required
 def index():
     return render_template('index.html')
 
 @app.route("/dashboard")
+@login_required
 def dashboard():
     return render_template("dashboard.html")
+
+def allowed_username(nombre_usuario):
+    # Define el patrón de la expresión regular para letras y números sin espacios ni caracteres especiales
+    pattern = re.compile(r'^[a-zA-Z0-9]+$')
+    # Comprueba si el nombre de usuario coincide con el patrón
+    if pattern.match(nombre_usuario):
+        return True
+    else:
+        return False
 
 #------------------------------------------consulta de prendas-------------------------------------------
 def lista_prendas():
@@ -49,7 +116,8 @@ def lista_prendas():
     cur.close()
     conn.close()
     return prendas
-# ----------------------------------consulta de categorias (lista desplegable)-----------------------------------------------
+
+# ------------------------------------------consulta de categorias-----------------------------------------------
 def lista_categorias():
     conn=get_db_connection()
     cur=conn.cursor()
@@ -58,7 +126,8 @@ def lista_categorias():
     cur.close()
     conn.close()
     return categorias
-# ----------------------------------consulta de roles (lista desplegable)-----------------------------------------------
+
+# --------------------------------------consulta de roles-----------------------------------------------------------
 def lista_rol():
     conn=get_db_connection()
     cur=conn.cursor()
@@ -67,6 +136,7 @@ def lista_rol():
     cur.close()
     conn.close()
     return roles
+
 #-------------------------------------consulta de tallas---------------------------------------------------------------
 def lista_tallas():
     conn=get_db_connection()
@@ -76,6 +146,7 @@ def lista_tallas():
     cur.close()
     conn.close()
     return tallas
+
 #-------------------------------------consulta de colores---------------------------------------------------------------
 def lista_colores():
     conn=get_db_connection()
@@ -85,6 +156,7 @@ def lista_colores():
     cur.close()
     conn.close()
     return colores
+
 #----------------------------------consulta de marcas------------------------------------------------------------------
 def lista_marcas():
     conn=get_db_connection()
@@ -94,6 +166,7 @@ def lista_marcas():
     cur.close()
     conn.close()
     return marcas
+
 #---------------------------------------consulta de proveedor-----------------------------------------------------
 def lista_proveedores():
     conn=get_db_connection()
@@ -103,6 +176,7 @@ def lista_proveedores():
     cur.close()
     conn.close()
     return proveedores
+
 #-------------------------------------------consulta de detalles apartado--------------------------------------
 def detapar():
     conn = get_db_connection()  
@@ -112,6 +186,7 @@ def detapar():
     cur.close()
     conn.close()
     return detapas
+
 #-----------------------------------------------------PAGINADOR---------------------------------------------------------
 def paginador(sql_count,sql_lim,in_page,per_pages):
     page = request.args.get('page', in_page, type=int)
@@ -136,9 +211,6 @@ def paginador(sql_count,sql_lim,in_page,per_pages):
     return items, page, per_page, total_items, total_pages
 
 #--------------------------------------------------------inicio de sesion --------------------------------------------
-@app.route("/login")
-def login():
-    return render_template('sesion.html')
 
 @app.route('/loguear', methods=('GET','POST'))
 def loguear():
@@ -165,11 +237,11 @@ def loguear():
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('index'))
+    return redirect(url_for('login'))
 
 #------------------------------------------------- CRUD usuarios --------------------------------------------------------
 @app.route("/usuarios")
-@login_required 
+@login_required
 def usuarios():
     conn = get_db_connection()
     cur= conn.cursor()
@@ -213,29 +285,55 @@ def usuario_nuevo():
 def usuarios_crear():
     if request.method == 'POST':
         nombre_usuario= request.form['nombre_usuario']
-        apellido_paterno= request.form['apellido_paterno']
-        apellido_materno= request.form['apellido_materno']
-        celular_usuario= request.form['celular_usuario']
-        domicilio_usuario= request.form['domicilio_usuario']
-        contrasenia= request.form['contrasenia']
-        Pass= generate_password_hash(contrasenia)
-        correo_electronico= request.form['correo_electronico']
-        rol= request.form['id_rol']
-        estado = True
-        creado = datetime.now()
-        editado =datetime.now() 
+        if allowed_username(nombre_usuario):
+            apellido_paterno= request.form['apellido_paterno']
+            apellido_materno= request.form['apellido_materno']
+            celular_usuario= request.form['celular_usuario']
+            domicilio_usuario= request.form['domicilio_usuario']
+            contrasenia= request.form['contrasenia']
+            Pass= generate_password_hash(contrasenia)
+            correo_electronico= request.form['correo_electronico']
+            rol= request.form['id_rol']
+            estado = True
+            creado = datetime.now()
+            editado =datetime.now() 
+            imagen = request.files['foto']
+            filename = None  # Inicializar filename para evitar el error de variable no definida
 
-        conn = get_db_connection()
-        cur = conn.cursor()
-        cur.execute('INSERT INTO usuarios(nombre_usuario, apellido_paterno, apellido_materno, celular_usuario, domicilo_usuario, contrasenia, correo_electronico, rol, estado, creado, editado)'
-                    'VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);',
-                    (nombre_usuario,apellido_paterno,apellido_materno,celular_usuario,domicilio_usuario,Pass,correo_electronico,rol,estado,creado,editado))
-        conn.commit()
-        cur.close()
-        conn.close()
+            if imagen and allowed_file(imagen.filename):
+                # Verificar si el archivo con el mismo nombre ya existe
+                # Crear un nombre dinámico para la foto de perfil con el nombre del alumno y una cadena aleatoria
+                cadena_aleatoria = my_random_string(10)
+                filename = apellido_paterno + "" + apellido_materno + "" + nombre_usuario + "" + str(creado)[:10] + "" + cadena_aleatoria + "_" + secure_filename(imagen.filename)
+                file_path = os.path.join(ruta_usuarios, filename)
+                if os.path.exists(file_path):
+                    flash('Error: ¡Un archivo con el mismo nombre ya existe! Intente renombrar su archivo.')
+                    return redirect(url_for('usuarios'))
+                # Guardar el archivo y registrar en la base de datos
+            imagen.save(file_path)
 
-        flash('¡Usuario agregado exitosamente!')
-        return redirect(url_for('usuarios'))
+            conn = get_db_connection()
+            cur = conn.cursor(cursor_factory=RealDictCursor)
+            sql_validar="SELECT COUNT(*) FROM usuarios WHERE correo_electronico = '{}'".format(correo_electronico)
+            cur.execute(sql_validar)
+            existe = cur.fetchone()['count']
+            if existe:
+                cur.close()
+                conn.close()
+                flash('ERROR: El correo seleccionado ya existe. intente con otro.')
+                return redirect(url_for('usuario_nuevo'))
+            else:
+                sql="INSERT INTO usuarios(nombre_usuario, apellido_paterno, apellido_materno, celular_usuario, domicilo_usuario, contrasenia, correo_electronico, rol, estado, creado, editado, foto) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
+                valores=(nombre_usuario,apellido_paterno,apellido_materno,celular_usuario,domicilio_usuario,Pass,correo_electronico,rol,estado,creado,editado, filename)
+                cur.execute(sql,valores)
+                conn.commit()
+                cur.close()
+                conn.close()
+                flash('¡Usuario agregado exitosamente!')
+                return redirect(url_for('usuarios'))
+        else:
+            flash('Error: El correo de usuario no cumple con las características. Intente con otro.')
+            return redirect(url_for('usuario_nuevo'))
     return redirect(url_for('usuario_nuevo'))
 
 @app.route('/usuarios/<string:id>')
@@ -309,7 +407,6 @@ def usuarios_actualizar(id):
         contrasenia= request.form['contrasenia']
         correo_electronico= request.form['correo_electronico']
         rol= request.form['id_rol']
-        estado = True
         editado =datetime.now() 
 
         conn=get_db_connection()
@@ -321,6 +418,52 @@ def usuarios_actualizar(id):
         cur.close()
         conn.close()
         flash("usuario editado correctamente")
+    return redirect(url_for('usuarios'))
+
+@app.route('/usuarios/editar/foto/<string:id>', methods=['POST'])
+@login_required
+def usuarios_actualizar_foto(id):
+    if request.method == 'POST':
+        imagen=request.files['foto']
+        nombre_usuario= request.form['nombre_usuario']
+        apellido_paterno= request.form['apellido_paterno']
+        apellido_materno= request.form['apellido_materno']
+        foto_anterior = request.form['anterior']
+        foto_anterior = os.path.join(ruta_usuarios,foto_anterior)
+        editado = datetime.now()
+
+        if imagen and allowed_file(imagen.filename):
+                # Verificar si el archivo con el mismo nombre ya existe
+                # Crear un nombre dinámico para la foto de perfil con el nombre del alumno y una cadena aleatoria
+                cadena_aleatoria = my_random_string(10)
+                filename = apellido_paterno + "" + apellido_materno + "" + nombre_usuario + "" + str(editado)[:10] + "" + cadena_aleatoria + "_" + secure_filename(imagen.filename)
+                file_path = os.path.join(ruta_usuarios, filename)
+                if os.path.exists(file_path):
+                    flash('Error: ¡Un archivo con el mismo nombre ya existe! Intente renombrar su archivo.')
+                    return redirect(url_for('usuarios'))
+                # Guardar el archivo y registrar en la base de datos
+                imagen.save(file_path)
+
+        conn=get_db_connection()
+        cur=conn.cursor()
+        sql="UPDATE usuarios SET editado=%s, foto=%s WHERE id_usuario=%s"
+        valores=(editado,filename,id)
+        cur.execute(sql,valores)
+        conn.commit()
+        cur.close()
+        conn.close() 
+
+        #Eliminar foto de perfil antigua
+        if request.form['anterior'] != "":
+            if os.path.exists(foto_anterior):
+                    os.remove(foto_anterior)
+
+            flash('¡Foto de perfil actualizada exitosamente!')
+            return redirect(url_for('usuarios_actualizar', id=id))
+        else:
+            flash('Error: ¡Extensión de archivo invalida! Intente con una imagen valida PNG, JPG o JPEG')
+            return redirect(url_for('usuarios_actualizar', id=id))
+
     return redirect(url_for('usuarios'))
 
 @app.route('/usuarios/eliminar/<string:id>')
@@ -340,6 +483,34 @@ def usuarios_eliminar(id):
         conn.close()
         flash('Usuario eliminado')
         return redirect(url_for('usuarios'))
+    else:
+        return redirect(url_for('usuarios'))
+
+@app.route('/usuarios/eliminar/foto/<string:foto>/<string:id>')
+@login_required
+def usuarios_eliminar_foto(foto,id):
+    if current_user.rol == 1:
+        foto_anterior = os.path.join(ruta_usuarios,foto)
+        editado = datetime.now()
+        conn = get_db_connection()
+        cur = conn.cursor()
+        #sql="DELETE FROM alumnos WHERE id_alumno={0}".format(id)
+        sql="UPDATE usuarios SET foto=%s, editado=%s WHERE id_usuario=%s"
+        valores=("",editado,id)
+        cur.execute(sql,valores)
+        conn.commit()
+        cur.close()
+        conn.close()
+        #Eliminar foto de perfil antigua
+        print(foto_anterior)
+        if foto != "":
+            if os.path.exists(foto_anterior):
+                os.remove(foto_anterior)
+                flash('¡Foto eliminada correctamente!')
+                return redirect(url_for('usuarios_actualizar', id=id))
+        else:
+            flash('Error: ¡No se puede ejecutar esta acción!')
+            return redirect(url_for('usuarios_actualizar', id=id))
     else:
         return redirect(url_for('usuarios'))
 
@@ -506,7 +677,7 @@ def proveedor_papelera():
     conn.close()
     return render_template('proveedores_papelera.html',proveedores=proveedores)  
   
-#--------------------------------CRUD prendas ----------------------------------------------------------
+#------------------------------------------CRUD prendas ----------------------------------------------------------
 @app.route("/prendas")
 @login_required
 def prendas():
@@ -619,19 +790,16 @@ def prendas_actualizar(id):
 @app.route("/prenda/papelera")
 @login_required
 def prenda_papelera():
-    conn = get_db_connection()
-    cur= conn.cursor()
-    cur.execute('SELECT * FROM public.prendas_vista ORDER BY id_prenda;')
-    print("--------------------")
-    print("ESTO ES LA CONSULTA")
-    prendas = cur.fetchall()
-    for prenda in prendas:
-        print("--------------------------")
-        print(prenda)
-        print("--------------------------")
-    cur.close()
-    conn.close()
-    return render_template('prendas_papelera.html',prendas=prendas)
+    sql_count= 'SELECT COUNT(*) FROM prendas WHERE estado=false;'
+   # sql_lim='SELECT prendas.id_prenda, prendas.codigo_producto, proveedores.nombre_proveedor, categoria.categoria, marcas.nombre_marca, prendas.estado, prendas.creado, prendas.modificado, colores.color, tallas.talla, prendas.precio_prenda FROM prendas JOIN proveedores ON prendas.nombre_proveedor = proveedores.id_proveedores JOIN categoria ON prendas.categoria_prenda = categoria.id_categoria JOIN marcas ON prendas.marca_prenda = marcas.id_marca JOIN colores ON prendas.color_prenda = colores.id_color JOIN tallas ON prendas.talla_prenda = tallas.id_tallas ORDER BY id_prenda DESC LIMIT %s OFFSET %s;'
+    sql_lim='SELECT * FROM public.prendas_vista WHERE estado=false ORDER BY id_prenda DESC LIMIT %s OFFSET %s;'
+    paginado = paginador(sql_count,sql_lim,1,1)
+    return render_template('prendas_papelera.html',
+                           prendas=paginado[0],
+                           page=paginado[1],
+                           per_page=paginado[2],
+                           total_items=paginado[3],
+                           total_pages=paginado[4])
 
 @app.route('/prendas/eliminar/<string:id>')
 @login_required
@@ -911,7 +1079,8 @@ def apartado_eliminar(id):
     return redirect(url_for('sApartado'))
     
     #--------------------------------------------------------------------------------------- 
- 
+
+#-------------------------------errores------------------------------------
 def pagina_no_encontrada(error):
     return render_template('404.html')
 

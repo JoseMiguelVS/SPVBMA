@@ -4,8 +4,66 @@
 
 {% block body %}
 
+<!-- -----------------Alertas de registro, editado, borrado y restaurado---------------------------- -->
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+{% for message in messages %}
+<div class="alert alert-{% if " Error" in message %}danger {% elif "Advertencia" in message %}warning {% else %}success
+        {% endif %} alert-dismissible fade show" role="alert">
+        <strong>{{message}}</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
 
+<!-- ------------------------------ACTUALIZAR IMAGEN------------------------------------- -->
+<div class="mt-2 mb-3">
+  <div class="row justify-content-center">
+    <div class="col-7 col-sm-5 col-md-4 col-lg-3">
+      <div class="ratio ratio-1x1 bg-success overflow-hidden" style="border-radius: 50%;">
+        {% if usuarios.12 == null or usuarios.12 == "" %}
+        <img src="{{ url_for('static', filename='img/user.jpg')}}">
+        {% else %}
+        <img src="{{ url_for('static', filename='img/uploads/') + usuarios.12 }}">
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
 
+<div class="row mb-3">
+  {% if usuarios.12 == "" or usuarios.12 == Null %}
+  <div class="col d-flex justify-content-center"><a class="btn btn-outline-primary" data-bs-toggle="collapse"
+      href="#cambiarFoto" role="button" aria-expanded="false" aria-controls="collapseExample">Añadir foto</a></div>
+  {% else %}
+  <div class="col"><a class="btn btn-outline-primary float-end" data-bs-toggle="collapse" href="#cambiarFoto"
+      role="button" aria-expanded="false" aria-controls="collapseExample">Cambiar foto</a></div>
+  <div class="col"> <a class="btn btn-outline-danger float-start"
+      href="{{url_for('usuarios_eliminar_foto', id=usuarios[0], foto=usuarios[12])}}">Eliminar foto</a></div>
+  {% endif %}
+</div>
+
+<div class="collapse" id="cambiarFoto">
+  <form method="post" action="{{url_for('usuarios_actualizar_foto', id=usuarios[0])}}" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
+    <input type="hidden" name="nombre_usuario" value="{{usuarios.1}}">
+    <input type="hidden" name="apellido_paterno" value="{{usuarios.2}}">
+    <input type="hidden" name="apellido_materno" value="{{usuarios.3}}">
+    <input type="hidden" name="anterior" value="{{usuarios.12}}">
+
+    <div class="form-group mb-3">
+      <label for="formFile" class="form-label">Foto de perfil</label>
+      <div class="input-group">
+        <input type="file" class="form-control" name="foto" id="inputGroupFile04"
+          aria-describedby="inputGroupFileAddon04" aria-label="Upload" required accept="image/png, .jpeg, .jpg">
+        <button class="btn btn-outline-primary" type="submit" id="inputGroupFileAddon04">Actualizar</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- ----------------------------ACTUALIZAR DATOS--------------------------------------------- -->
 <form method="POST" action="{{url_for('usuarios_actualizar',id=usuarios[0])}} ">
   <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
 
@@ -39,31 +97,32 @@
       value="{{usuarios[5]}}">
   </div>
 
-  <div class="form-group">
+  <!-- <div class="form-group">
     <label for="contrasenia">Contraseña</label>
     <input type="text" class="form-control" id="contrasenia" placeholder="Contraseña" name="contrasenia"
       value="{{usuarios[6]}}">
-  </div>
+  </div> -->
 
   <div class="form-group">
     <label for="correo_electronico">Correo Electronico</label>
     <input type="text" class="form-control" id="correo_electronico" placeholder="Gmail" name="correo_electronico"
       value="{{usuarios[7]}}">
   </div>
-<!-- ------------------------------------desplegable-------------------------------------------------------------- -->
-<label for="Cargo">Cargo</label>
-<select name="id_rol" id="id_rol" class="form-select" aria-label="Default select example">
-  <option value="true" selected>------Seleccione el cargo--------</option>
-  {% if roles %}
+
+  <!-- ------------------------------------desplegable-------------------------------------------------------------- -->
+  <label for="Cargo">Cargo</label>
+  <select name="id_rol" id="id_rol" class="form-select" aria-label="Default select example">
+    <option value="true" selected>------Seleccione el cargo--------</option>
+    {% if roles %}
     {% for rol in roles %}
     <option value="{{rol.0}}">{{rol.1}}</option>
     {% endfor %}
-  {% else %}
+    {% else %}
     <option>Aún no hay registros</option>
-  {% endif %}
-</select>
-<!-- ------------------------------------------------------------------------------------------------------------- -->
+    {% endif %}
+  </select>
 
+  <!-- ------------------------------------------------------------------------------------------------------------- -->
   <br>
   <button class="btn btn-outline-danger d-inline-flex align-items-center" type="submit">
     Guardar

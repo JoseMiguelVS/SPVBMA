@@ -2,7 +2,7 @@
 {% block title %} Ay hola {% endblock %}
 {% block body %}
 
-<h2>Usuarios</h2>
+<h2>Usuarios</h2> 
 <!-- -----------------Alertas de registro, editado, borrado y restaurado---------------------------- -->
 {% with messages = get_flashed_messages() %}
 {% if messages %}
@@ -15,7 +15,7 @@
 {% endfor %}
 {% endif %}
 {% endwith %}
-<!-- -------------------------NUEVO USUARIO-------------------------------------- -->
+<!-- -------------------------NUEVO USUARIO-------------------------------------- --> 
 {% if current_user.rol == 1 %}
 <br>
 <a href="{{url_for('usuario_nuevo')}}" class="btn btn-outline-danger d-inline-flex align-items-center">Nuevo</a>

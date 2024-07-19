@@ -1,5 +1,5 @@
 html {
-    background-color: #545454;
+    background-color: #a09e9e ;
     margin: 0; /* Eliminar los márgenes por defecto */
     height: 100%; /* Asegurarse que cubra toda la altura */
 }
@@ -19,7 +19,7 @@ body {
 }
 .fc
 {
-    color: white;
+    color: rgb(0, 0, 0);
 }
 .btn-act{
     text-decoration: none;
@@ -93,7 +93,7 @@ nav .add-user {
 
 .content {
     padding: 20px;
-    background-color: #a09e9e ;
+    background-color: #e9e9e9 ;
 
 }
 

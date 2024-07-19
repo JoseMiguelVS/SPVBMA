@@ -3,8 +3,13 @@
 {% block body %}
 <p class="fc">Fecha creacion: {{usuarios[10]}}</p>
 <p class="fc">Fecha modificacion: {{usuarios[11]}}</p>
+<!-- --------------------------------------------------IMAGEN----------------------------------------------------- -->
 <table class="table-bordered table-responsive">
-
+    
+    <div class="col-md-4">
+        <img src="{{ url_for('static', filename='img/uploads/') + usuarios.12 }}" class="img-fluid rounded-start" alt="...">
+      </div>
+<!-- ----------------------------------------------------------------------------------------------- -->
     <thead>
         <tr>
             <th class="text-center">Nombre </th>
@@ -39,7 +44,7 @@
                 {{usuarios[7]}}
             </td>
             <td class="text-center">
-                {{usuarios[13]}}
+                {{usuarios[14]}}
             </td>
 
         </tr>

@@ -4,7 +4,7 @@
 
 <h2>Papelera de Prendas</h2>
 
-<table class="table table-hover">
+<table class="table-bordered table-responsive"> 
         <thead>
                 <tr>
                         <th class="text-center">Ver </th>
@@ -16,46 +16,90 @@
         </thead>
         <tbody>
                 {% for prenda in prendas %}
-                {% if prenda.5==false %}
+                {% if prenda.estado==false %}
 
                 <tr>
                         <td class="text-center">
                                 <div class="btn btn-outline-danger d-inline-flex align-items-center">
-                                        <a href="{{ url_for('prendas_detallesRes', id = prenda[0]) }}"><img
+                                        <a href="{{ url_for('prendas_detallesRes', id = prenda.id_prenda) }}"><img
                                                         src="{{ url_for('static',filename = 'img/eye.svg') }}"
                                                         alt="borrar" height="18"></a>
                                 </div>
                         </td>
-                        <!-- categoria -->
                         <td class="text-center">
-                                {{prenda[3]}}
+                                {{prenda.categoria}}
 
                         </td>
                         <!-- talla -->
                         <td class="text-center">
-                                {{prenda[9]}}
+                                {{prenda.talla}}
                         </td>
                         <!-- color -->
                         <td class="text-center">
-                                {{prenda[8]}}
+                                {{prenda.color}}
                         </td>
                         <!-- precio -->
                         <td class="text-center">
-                                {{prenda[10]}}
+                                {{prenda.precio_prenda}}
                         </td>
                         <!-- marca -->
                         <td class="text-center">
-                                {{prenda[3]}}
+                                {{prenda.nombre_marca}}
                         </td>
                 </tr>
                 {% endif %}
                 {% endfor %}
         </tbody>
 </table>
+<!-- ----------------------------------------FUNCION DE PAGINADOR--------------------------------- -->
+<nav aria-label="Page navigation example">
+        <ul class="pagination justify-content-center">
+                {% if page > 1 %}
+                <li class="page-item">
+                        <a class="page-link"
+                                href="{{ url_for('prendas_papelera') }}?page={{ page - 1 }}&per_page={{ per_page }}"
+                                aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                        </a>
+                </li>
+                {% if page != 1 and page != 2 %}
+                <li class="page-item"><a class="page-link" href="{{url_for('prendas_papelera')}}">1</a></li>
+                {% if page != 3 %}
+                <li class="page-item"><a class="page-link disabled">...</a></li>
+                {% endif %}
+                {% endif %}
+                <li class="page-item"><a class="page-link"
+                                href="{{url_for('prendas_papelera')}}?page={{ page - 1 }}&per_page={{ per_page }}">{{page-1}}</a>
+                </li>
+                {% endif %}
+
+                <li class="page-item"><a class="page-link active" href="#">{{page}}</a></li>
+
+                {% if page < total_pages %} <li class="page-item"><a class="page-link"
+                                href="{{url_for('prendas_papelera')}}?page={{ page + 1 }}&per_page={{ per_page }}">{{page+1}}</a>
+                        </li>
+                        {% if page != total_pages and page != total_pages-1 %}
+                        {% if page != total_pages-2 %}
+                        <li class="page-item"><a class="page-link disabled">...</a></li>
+                        {% endif %}
+                        <li class="page-item"><a class="page-link"
+                                        href="{{url_for('prendas_papelera')}}?page={{ total_pages }}&per_page={{ per_page }}">{{total_pages}}</a>
+                        </li>
+                        {% endif %}
+                        <li class="page-item">
+                                <a class="page-link"
+                                        href="{{url_for('prendas_papelera')}}?page={{ page + 1 }}&per_page={{ per_page }}"
+                                        aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                </a>
+                        </li>
+                        {% endif %}
+        </ul>
+</nav>
+<br>
 <div class="btn btn-outline-danger d-inline-flex align-items-center">
 
-        <a href="{{ url_for('prendas')}}"><img
-                        src="{{ url_for('static',filename = 'img/redo.svg') }}"
-                        alt="ver" height="18"></a>
+        <a href="{{ url_for('prendas')}}"><img src="{{ url_for('static',filename = 'img/redo.svg') }}" alt="ver"
+                        height="18"></a>
 </div>
 {% endblock %}

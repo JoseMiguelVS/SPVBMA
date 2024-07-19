@@ -1,7 +1,7 @@
 {% extends './layout.html' %}
 {% block title %} Ay hola {% endblock %}
 {% block body %}
-
+ 
 <h2>Prendas</h2>
 
 <!-- ------------------------Alertas de registro, editado, borrado y restaurado-------------------------------- -->
@@ -24,8 +24,8 @@
 {% endif %}
 <!-- -------------------------------------------------------TABLA----------------------------------------------- -->
 <table class="table-bordered table-responsive">
+        <!-- ----------------------TITULOS---------------------------- -->
         <thead>
-<!-- ----------------------TITULOS---------------------------- -->
                 <tr>
                         {% if current_user.rol == 1 %}
                         <th class="text-center">Ver </th>
@@ -42,8 +42,8 @@
                         {% endif %}
                 </tr>
         </thead>
+        <!-- -------------CONTENIDO-------------------------- -->
         <tbody>
-<!-- -------------CONTENIDO-------------------------- -->
                 {% for prenda in prendas %}
                 {% if prenda.estado==true %}
                 <tr>
